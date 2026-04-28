@@ -1,4 +1,6 @@
 {
+  "fixture_only": true,
+  "fixture_note": "Derived from sample-receipt.json with one signed field tampered.",
   "signer": "runtime.commandlayer.eth",
   "verb": "agent.execute",
   "ts": "2026-04-28T00:00:00.000Z",
@@ -7,7 +9,7 @@
     "content": "hello world"
   },
   "output": {
-    "summary": "hello world!!!"
+    "summary": "hello world (tampered)"
   },
   "execution": {
     "runtime": "commandlayer-runtime",
@@ -21,7 +23,7 @@
   },
   "signature": {
     "alg": "ed25519",
-    "kid": "test-kid-1",
+    "kid": "vC4WbcNoq2znSCiQ",
     "sig": "sfTRREb8HV7zhIKbcfUyivNlXGXDf6pE1cumpvzH0FBBhClQ/37NXHQxTzq7AeTiZlYJGwfT8JKe7pEvGTf/Aw=="
   }
 }

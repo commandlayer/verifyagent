@@ -43,9 +43,9 @@ This writes `examples/wrapped-agent-demo/out/receipt.json` and prints the verify
 
 ## Sample receipt status
 
-- `examples/sample-receipt.json` is a **fixture-only real Ed25519-signed receipt-format payload** used for deterministic local testing.
-- It is **not** a live ENS-proof sample and should not be treated as a production Runtime-signed public receipt.
-- TODO: replace it with a production CommandLayer Runtime receipt signed by `runtime.commandlayer.eth` when one is available for public distribution.
+- `examples/sample-receipt.json` is a **fixture/demo sample** and is clearly labeled `fixture_only`.
+- It is **not** signed by the current `runtime.commandlayer.eth` fallback private key (`cl.sig.pub = ed25519:hhyCuPNoMk4JtEvGEV8F6nMZ4uDO1EcyizPufmnJTOY=`), so verification returns **INVALID**.
+- Use `examples/wrapped-agent-demo` to generate a real signed receipt that verifies with `verifyReceipt` when you provide the matching signer key material.
 
 ## ENS signer records
 
