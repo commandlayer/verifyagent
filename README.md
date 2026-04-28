@@ -29,7 +29,7 @@ npm install
 npm run dev
 ```
 
-Open: `http://localhost:4173/public/verify.html`
+Open: `http://localhost:4173/verify.html`
 
 ## Run the wrapped agent demo
 
@@ -41,10 +41,10 @@ npm run demo
 
 This writes `examples/wrapped-agent-demo/out/receipt.json` and prints the verify URL.
 
-
 ## Sample receipt status
 
-- `examples/sample-receipt.json` is a **real Ed25519-signed receipt-format fixture** used for deterministic testing.
+- `examples/sample-receipt.json` is a **fixture-only real Ed25519-signed receipt-format payload** used for deterministic local testing.
+- It is **not** a live ENS-proof sample and should not be treated as a production Runtime-signed public receipt.
 - TODO: replace it with a production CommandLayer Runtime receipt signed by `runtime.commandlayer.eth` when one is available for public distribution.
 
 ## ENS signer records

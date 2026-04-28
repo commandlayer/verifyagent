@@ -1,4 +1,6 @@
 {
+  "fixture_only": true,
+  "fixture_note": "Deterministic real Ed25519 fixture for local testing; not a live ENS/runtime proof artifact.",
   "signer": "runtime.commandlayer.eth",
   "verb": "agent.execute",
   "ts": "2026-04-28T00:00:00.000Z",
