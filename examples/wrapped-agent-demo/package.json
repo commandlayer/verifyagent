@@ -1,0 +1,8 @@
+{
+  "name": "wrapped-agent-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "demo": "node demo-agent.js"
+  }
+}

@@ -7,7 +7,7 @@
     "content": "hello world"
   },
   "output": {
-    "summary": "hello world"
+    "summary": "hello world!!!"
   },
   "execution": {
     "runtime": "commandlayer-runtime",

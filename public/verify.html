@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VerifyAgent.eth</title>
+    <title>VerifyAgent</title>
     <style>
-      body { font-family: Arial, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; color: #111; }
+      body { font-family: Arial, sans-serif; max-width: 920px; margin: 2rem auto; padding: 0 1rem; color: #111; }
       h1 { margin-bottom: 0.25rem; }
       .tagline { color: #444; margin-top: 0; }
-      textarea { width: 100%; min-height: 280px; font-family: monospace; font-size: 0.9rem; padding: 0.75rem; }
+      textarea { width: 100%; min-height: 280px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9rem; padding: 0.75rem; }
       .row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1rem 0; }
       button { padding: 0.6rem 0.9rem; border: 1px solid #bbb; background: #f4f4f4; cursor: pointer; }
       .card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; background: #fafafa; }
@@ -16,82 +16,80 @@
       .verified { color: #0a7d2e; }
       .invalid { color: #b10e0e; }
       ul { margin-top: 0.4rem; }
-      .muted { color: #666; font-size: 0.95rem; }
+      a { color: #0a58ca; }
     </style>
   </head>
   <body>
-    <h1>VerifyAgent.eth</h1>
-    <p class="tagline">Agents don’t make claims — they produce proof.</p>
+    <h1>VerifyAgent</h1>
+    <p class="tagline">Agent → Receipt → VerifyAgent → Proof.</p>
 
-    <textarea id="receiptInput" placeholder="Paste a receipt JSON here..."></textarea>
+    <textarea id="receiptInput" placeholder="Paste receipt JSON here..."></textarea>
 
     <div class="row">
-      <button id="loadSample">Load Sample Receipt</button>
-      <button id="verifyBtn">Verify</button>
-      <button id="tamperBtn">Tamper Receipt</button>
+      <button id="loadSample">Load sample receipt</button>
+      <button id="loadTampered">Load tampered receipt</button>
+      <button id="verifyBtn">Verify receipt</button>
+      <button id="clearBtn">Clear</button>
     </div>
 
     <div class="card">
       <div>Result: <span id="status" class="status">—</span></div>
       <ul>
-        <li>Hash match: <strong id="checkHash">—</strong></li>
-        <li>Signature valid: <strong id="checkSig">—</strong></li>
-        <li>ENS resolved: <strong id="checkEns">—</strong></li>
+        <li>Signer ENS: <strong id="signerEns">—</strong></li>
+        <li>Key ID: <strong id="keyId">—</strong></li>
+        <li>Public key source: <strong id="publicKeySource">—</strong></li>
+        <li>Canonicalization: <strong id="canonicalization">—</strong></li>
+        <li>Hash matched: <strong id="hashMatched">—</strong></li>
+        <li>Signature valid: <strong id="signatureValid">—</strong></li>
       </ul>
-      <p class="muted">Signature mode: <span id="sigMode">placeholder (local demo only)</span></p>
     </div>
 
     <div class="card" style="margin-top: 1rem;">
-      <h3 style="margin-top: 0;">ENS</h3>
-      <div>Signer: <strong id="ensSigner">—</strong></div>
-      <div>Key source: <strong id="ensKeySource">ENS resolution not yet live in local demo</strong></div>
+      <h3 style="margin-top: 0;">Wrap Your Agent</h3>
+      <p>Run the local wrapped-agent demo, emit a signed receipt, then verify it here.</p>
+      <ul>
+        <li><a href="/docs/wrap-your-agent.md">docs/wrap-your-agent.md</a></li>
+        <li><a href="/examples/wrapped-agent-demo/README.md">examples/wrapped-agent-demo</a></li>
+      </ul>
     </div>
 
     <script type="module">
       import { verifyReceipt } from '/src/verify.js';
-      import { tamperReceiptJson } from '/src/tamper.js';
 
       const receiptInput = document.getElementById('receiptInput');
       const statusEl = document.getElementById('status');
-      const checkHashEl = document.getElementById('checkHash');
-      const checkSigEl = document.getElementById('checkSig');
-      const checkEnsEl = document.getElementById('checkEns');
-      const ensSignerEl = document.getElementById('ensSigner');
-      const ensKeySourceEl = document.getElementById('ensKeySource');
-      const sigModeEl = document.getElementById('sigMode');
+      const signerEnsEl = document.getElementById('signerEns');
+      const keyIdEl = document.getElementById('keyId');
+      const publicKeySourceEl = document.getElementById('publicKeySource');
+      const canonicalizationEl = document.getElementById('canonicalization');
+      const hashMatchedEl = document.getElementById('hashMatched');
+      const signatureValidEl = document.getElementById('signatureValid');
 
-      function yn(v) {
-        return v ? 'YES' : 'NO';
-      }
+      const yn = (v) => (v ? 'YES' : 'NO');
 
-      function renderResult(result) {
+      function render(result) {
         statusEl.textContent = result.status;
         statusEl.className = `status ${result.status === 'VERIFIED' ? 'verified' : 'invalid'}`;
-        checkHashEl.textContent = yn(result.checks.hash_matches);
-        checkSigEl.textContent = yn(result.checks.signature_valid);
-        checkEnsEl.textContent = yn(result.checks.ens_resolved);
-        ensSignerEl.textContent = result.ens?.signer || 'unknown';
-        ensKeySourceEl.textContent = result.ens?.keySource || 'ENS resolution not yet live in local demo';
-        sigModeEl.textContent = result.debug?.signature_mode || 'placeholder';
+        signerEnsEl.textContent = result.signerEns || 'unknown';
+        keyIdEl.textContent = result.keyId || '—';
+        publicKeySourceEl.textContent = result.publicKeySource || '—';
+        canonicalizationEl.textContent = result.canonicalization || '—';
+        hashMatchedEl.textContent = yn(result.checks?.hash_matched);
+        signatureValidEl.textContent = yn(result.checks?.signature_valid);
       }
 
-      document.getElementById('loadSample').addEventListener('click', async () => {
-        const res = await fetch('/examples/sample-receipt.json');
+      async function loadJson(path) {
+        const res = await fetch(path);
         receiptInput.value = JSON.stringify(await res.json(), null, 2);
-      });
+      }
 
-      document.getElementById('verifyBtn').addEventListener('click', async () => {
-        const result = await verifyReceipt(receiptInput.value);
-        renderResult(result);
+      document.getElementById('loadSample').addEventListener('click', () => loadJson('/examples/sample-receipt.json'));
+      document.getElementById('loadTampered').addEventListener('click', () => loadJson('/examples/tampered-receipt.json'));
+      document.getElementById('clearBtn').addEventListener('click', () => {
+        receiptInput.value = '';
+        render({ status: '—', checks: {} });
       });
-
-      document.getElementById('tamperBtn').addEventListener('click', () => {
-        try {
-          receiptInput.value = tamperReceiptJson(receiptInput.value);
-        } catch {
-          alert('Receipt JSON is invalid; load sample or fix JSON first.');
-        }
-      });
+      document.getElementById('verifyBtn').addEventListener('click', async () => render(await verifyReceipt(receiptInput.value)));
     </script>
   </body>
 </html>
