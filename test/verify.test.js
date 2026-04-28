@@ -18,19 +18,13 @@ function bytesToPem(bytes) {
   return `-----BEGIN PRIVATE KEY-----\n${lines}\n-----END PRIVATE KEY-----`;
 }
 
-test('sample receipt is either verifiable or clearly fixture-labeled', async () => {
+test('sample receipt verifies', async () => {
   const sample = await loadJson(samplePath);
   const result = await verifyReceipt(sample);
 
-  if (result.status === 'VERIFIED') {
-    assert.equal(result.checks.hash_matched, true);
-    assert.equal(result.checks.signature_valid, true);
-    return;
-  }
-
-  assert.equal(sample.fixture_only, true);
-  assert.match(sample.fixture_note, /fixture|demo/i);
-  assert.equal(result.status, 'INVALID');
+  assert.equal(result.status, 'VERIFIED');
+  assert.equal(result.checks.hash_matched, true);
+  assert.equal(result.checks.signature_valid, true);
 });
 
 test('tampered receipt fails verification', async () => {
