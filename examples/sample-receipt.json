@@ -1,6 +1,6 @@
 {
   "fixture_only": true,
-  "fixture_note": "Deterministic real Ed25519 fixture for local testing; not a live ENS/runtime proof artifact.",
+  "fixture_note": "Demo fixture only: this sample is intentionally not signed by the runtime.commandlayer.eth fallback private key.",
   "signer": "runtime.commandlayer.eth",
   "verb": "agent.execute",
   "ts": "2026-04-28T00:00:00.000Z",
@@ -23,7 +23,7 @@
   },
   "signature": {
     "alg": "ed25519",
-    "kid": "test-kid-1",
+    "kid": "vC4WbcNoq2znSCiQ",
     "sig": "sfTRREb8HV7zhIKbcfUyivNlXGXDf6pE1cumpvzH0FBBhClQ/37NXHQxTzq7AeTiZlYJGwfT8JKe7pEvGTf/Aw=="
   }
 }

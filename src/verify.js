@@ -2,7 +2,7 @@ import { canonicalize } from './canonicalize.js';
 import { resolveSignerFromEns } from './ens.js';
 import { importEd25519PublicKey, sha256Hex, verifyHashHexSignature } from './crypto.js';
 
-function canonicalReceiptPayload(receipt) {
+export function canonicalReceiptPayload(receipt) {
   return {
     signer: receipt?.signer,
     verb: receipt?.verb,
