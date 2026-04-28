@@ -11,17 +11,17 @@
   },
   "execution": {
     "runtime": "commandlayer-runtime",
-    "run_id": "run_demo_0001"
+    "run_id": "run_real_0001"
   },
   "metadata": {
     "proof": {
       "canonicalization": "json.sorted_keys.v1",
-      "hash_sha256": "a0d2e196ceb59699ea1be61f40a3e9866a7130621a061d35f68890691813a414"
+      "hash_sha256": "a1d92b08b25ac2ae49b4fbd81b10b29d1bb58569872e30027b738a8e0a4c32b6"
     }
   },
   "signature": {
     "alg": "ed25519",
-    "kid": "vC4WbcNoq2znSCiQ",
-    "sig": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+    "kid": "test-kid-1",
+    "sig": "sfTRREb8HV7zhIKbcfUyivNlXGXDf6pE1cumpvzH0FBBhClQ/37NXHQxTzq7AeTiZlYJGwfT8JKe7pEvGTf/Aw=="
   }
 }
