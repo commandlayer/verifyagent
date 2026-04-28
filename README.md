@@ -29,7 +29,7 @@ npm install
 npm run dev
 ```
 
-Open: `http://localhost:4173/public/verify.html`
+Open: `http://localhost:4173/verify.html`
 
 ## Run the wrapped agent demo
 
