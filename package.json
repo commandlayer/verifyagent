@@ -1,0 +1,12 @@
+{
+  "name": "verifyagent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Public Commons/MIT verifier demo for CommandLayer receipts.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "python3 -m http.server 4173",
+    "test": "node -e \"console.log('No automated tests yet. Run npm run dev and verify manually.')\""
+  },
+  "type": "module"
+}

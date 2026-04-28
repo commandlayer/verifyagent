@@ -1,0 +1,29 @@
+{
+  "signer": "runtime.commandlayer.eth",
+  "verb": "agent.execute",
+  "ts": "2026-04-28T00:00:00.000Z",
+  "input": {
+    "task": "summarize",
+    "content": "hello world"
+  },
+  "output": {
+    "summary": "hello world"
+  },
+  "execution": {
+    "runtime": "commandlayer-runtime",
+    "run_id": "run_demo_0001"
+  },
+  "metadata": {
+    "proof": {
+      "canonicalization": "json.sorted_keys.v1",
+      "hash_sha256": "a0d2e196ceb59699ea1be61f40a3e9866a7130621a061d35f68890691813a414",
+      "note": "Sample/demo hash value for local verifier demo"
+    }
+  },
+  "signature": {
+    "alg": "ed25519",
+    "kid": "cl-sig-v1-demo",
+    "sig": "DEMO_SIGNATURE_VALID_FOR_HASH",
+    "note": "Sample/demo signature marker for placeholder local verification"
+  }
+}
