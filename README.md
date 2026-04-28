@@ -43,9 +43,8 @@ This writes `examples/wrapped-agent-demo/out/receipt.json` and prints the verify
 
 ## Sample receipt status
 
-- `examples/sample-receipt.json` is a **fixture/demo sample** and is clearly labeled `fixture_only`.
-- It is **not** signed by the current `runtime.commandlayer.eth` fallback private key (`cl.sig.pub = ed25519:hhyCuPNoMk4JtEvGEV8F6nMZ4uDO1EcyizPufmnJTOY=`), so verification returns **INVALID**.
-- Use `examples/wrapped-agent-demo` to generate a real signed receipt that verifies with `verifyReceipt` when you provide the matching signer key material.
+- `examples/sample-receipt.json` is a public sample that verifies as **VERIFIED**.
+- `examples/tampered-receipt.json` is derived from the sample, with one signed field changed while hash/signature are unchanged, and verifies as **INVALID**.
 
 ## ENS signer records
 
@@ -53,7 +52,7 @@ Known signer records for `runtime.commandlayer.eth`:
 
 - `cl.receipt.signer = runtime.commandlayer.eth`
 - `cl.sig.kid = vC4WbcNoq2znSCiQ`
-- `cl.sig.pub = ed25519:hhyCuPNoMk4JtEvGEV8F6nMZ4uDO1EcyizPufmnJTOY=`
+- `cl.sig.pub = ed25519:A5Q4Ff6BA8y/U0BxJcj8utWm8UemKGHRMCPQyoKRZQs=`
 - `cl.sig.canonical = json.sorted_keys.v1`
 
 When live ENS text resolution is unavailable in-browser, VerifyAgent uses a clearly labeled resolver fallback for `runtime.commandlayer.eth` only.

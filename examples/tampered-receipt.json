@@ -1,6 +1,4 @@
 {
-  "fixture_only": true,
-  "fixture_note": "Derived from sample-receipt.json with one signed field tampered.",
   "signer": "runtime.commandlayer.eth",
   "verb": "agent.execute",
   "ts": "2026-04-28T00:00:00.000Z",
