@@ -1,0 +1,35 @@
+{
+  "ens_records": {
+    "cl.receipt.signer": "runtime.commandlayer.eth",
+    "cl.sig.kid": "test-kid-1",
+    "cl.sig.pub": "ed25519:A5Q4Ff6BA8y/U0BxJcj8utWm8UemKGHRMCPQyoKRZQs=",
+    "cl.sig.canonical": "json.sorted_keys.v1"
+  },
+  "receipt": {
+    "signer": "runtime.commandlayer.eth",
+    "verb": "agent.execute",
+    "ts": "2026-04-28T00:00:00.000Z",
+    "input": {
+      "task": "summarize",
+      "content": "hello world"
+    },
+    "output": {
+      "summary": "hello world"
+    },
+    "execution": {
+      "runtime": "commandlayer-runtime",
+      "run_id": "run_real_0001"
+    },
+    "metadata": {
+      "proof": {
+        "canonicalization": "json.sorted_keys.v1",
+        "hash_sha256": "a1d92b08b25ac2ae49b4fbd81b10b29d1bb58569872e30027b738a8e0a4c32b6"
+      }
+    },
+    "signature": {
+      "alg": "ed25519",
+      "kid": "test-kid-1",
+      "sig": "sfTRREb8HV7zhIKbcfUyivNlXGXDf6pE1cumpvzH0FBBhClQ/37NXHQxTzq7AeTiZlYJGwfT8JKe7pEvGTf/Aw=="
+    }
+  }
+}

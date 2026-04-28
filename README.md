@@ -41,6 +41,12 @@ npm run demo
 
 This writes `examples/wrapped-agent-demo/out/receipt.json` and prints the verify URL.
 
+
+## Sample receipt status
+
+- `examples/sample-receipt.json` is a **real Ed25519-signed receipt-format fixture** used for deterministic testing.
+- TODO: replace it with a production CommandLayer Runtime receipt signed by `runtime.commandlayer.eth` when one is available for public distribution.
+
 ## ENS signer records
 
 Known signer records for `runtime.commandlayer.eth`:
