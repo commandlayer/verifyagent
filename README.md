@@ -1,29 +1,57 @@
 # VerifyAgent.eth
 
-VerifyAgent.eth is a public verifier for CommandLayer receipts.
+**VerifyAgent.eth proves what agents actually did using signed, ENS-resolved receipts.**
 
-Paste a receipt → resolve signer via ENS → verify hash + signature → get a clear result: VERIFIED or INVALID.
+VerifyAgent is a simple, public verifier for CommandLayer agent execution receipts. Paste a receipt, resolve signer identity through ENS, rebuild the canonical hash, verify the signature, and get a clear **VERIFIED** or **INVALID** result.
 
-## What it proves
-Agents don’t make claims — they produce proof.
+## Why VerifyAgent exists
 
-## How it works
-1. Parse receipt (execution + proof)
-2. Canonicalize JSON (json.sorted_keys.v1)
-3. Recompute SHA-256 hash
-4. Resolve signer from ENS (e.g. runtime.commandlayer.eth → cl.sig.pub, cl.sig.kid)
-5. Verify Ed25519 signature (@noble/ed25519)
-6. Return VERIFIED / INVALID with reasons
+VerifyAgent makes receipts auditable by anyone. It is intentionally lightweight and demo-friendly so teams, researchers, and hackathon builders can inspect proof artifacts without relying on private infrastructure.
 
-## Demo
-- Site: https://www.commandlayer.org
-- Verifier: https://www.commandlayer.org/verify.html
+## Why ENS matters
 
-## Repos
-- Runtime (backend): https://github.com/commandlayer/runtime
-- SDK: https://github.com/commandlayer/sdk
+ENS gives a human-readable signer identity (for example `runtime.commandlayer.eth`) and a discoverable place for signer key metadata (for example `cl.sig.pub`).
 
-## Quickstart
+In production, VerifyAgent resolves the signer through ENS and validates that the key source is trustworthy and transparent.
+
+> Local demo note: ENS resolution is currently shown as a clear stub in this repository.
+
+## Demo flow
+
+1. Load sample receipt
+2. Verify → **VERIFIED**
+3. Tamper receipt
+4. Verify → **INVALID**
+
+## Architecture split
+
+- **VerifyAgent** = public verifier / Commons / MIT
+- **CommandLayer SDK** = receipt tooling
+- **Runtime** = executes actions and emits receipts
+- **Commercial** = hosted APIs, x402, indexing, dashboards
+- **Agent Cards** = identity/capability metadata
+
+## Install & run
+
 ```bash
 npm install
 npm run dev
+```
+
+Then open:
+
+- `http://localhost:4173/public/verify.html`
+
+## Scope and license
+
+This repository is the public **Commons / MIT** verifier surface.
+
+- It does **not** include commercial hosted APIs
+- It does **not** include x402 implementation
+- It does **not** include dashboard/auth/org-account code
+
+## CommandLayer links
+
+- CommandLayer: https://www.commandlayer.org
+- Runtime repo: https://github.com/commandlayer/runtime
+- SDK repo: https://github.com/commandlayer/sdk
