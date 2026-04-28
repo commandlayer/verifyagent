@@ -1,4 +1,9 @@
 # Changelog
 
+## 0.2.0 - 2026-04-28
+- Added real ENS-resolved Ed25519 verification flow (with labeled fallback for `runtime.commandlayer.eth` when live ENS text resolution is unavailable in browser).
+- Added wrapped agent demo (`examples/wrapped-agent-demo`) that emits signed receipts.
+- Removed placeholder signature verification and removed acceptance of `DEMO_SIGNATURE_VALID_FOR_HASH`.
+
 ## 0.1.0 - 2026-04-28
 - Initialized VerifyAgent as its own public Commons/MIT repository for verifying CommandLayer receipts.

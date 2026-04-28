@@ -1,57 +1,53 @@
-# VerifyAgent.eth
+# VerifyAgent
 
-**VerifyAgent.eth proves what agents actually did using signed, ENS-resolved receipts.**
+VerifyAgent is a public verifier for CommandLayer receipts. It lets anyone paste a receipt, resolve signer metadata, recompute the canonical hash, verify Ed25519 signatures, and see a clear **VERIFIED** or **INVALID** result.
 
-VerifyAgent is a simple, public verifier for CommandLayer agent execution receipts. Paste a receipt, resolve signer identity through ENS, rebuild the canonical hash, verify the signature, and get a clear **VERIFIED** or **INVALID** result.
+## What VerifyAgent is
 
-## Why VerifyAgent exists
+- A public verification surface for signed agent receipts.
+- A hackathon-friendly demo for end-to-end proof flows.
+- A reference implementation for ENS signer metadata + receipt verification.
 
-VerifyAgent makes receipts auditable by anyone. It is intentionally lightweight and demo-friendly so teams, researchers, and hackathon builders can inspect proof artifacts without relying on private infrastructure.
+## What VerifyAgent is not
 
-## Why ENS matters
+- Not commercial x402/payment gateway code.
+- Not dashboard/auth/org-account infrastructure.
+- Not a hosted backend dependency for verification.
 
-ENS gives a human-readable signer identity (for example `runtime.commandlayer.eth`) and a discoverable place for signer key metadata (for example `cl.sig.pub`).
+## Flow: Agent → Receipt → VerifyAgent → Proof
 
-In production, VerifyAgent resolves the signer through ENS and validates that the key source is trustworthy and transparent.
+1. Agent runs an action.
+2. Wrapper emits a signed receipt.
+3. VerifyAgent resolves signer metadata (`cl.sig.pub`, `cl.sig.kid`, `cl.sig.canonical`, `cl.receipt.signer`).
+4. VerifyAgent canonicalizes + hashes payload, then verifies Ed25519 signature.
+5. Output is **VERIFIED** or **INVALID** with explicit check fields.
 
-> Local demo note: ENS resolution is currently shown as a clear stub in this repository.
-
-## Demo flow
-
-1. Load sample receipt
-2. Verify → **VERIFIED**
-3. Tamper receipt
-4. Verify → **INVALID**
-
-## Architecture split
-
-- **VerifyAgent** = public verifier / Commons / MIT
-- **CommandLayer SDK** = receipt tooling
-- **Runtime** = executes actions and emits receipts
-- **Commercial** = hosted APIs, x402, indexing, dashboards
-- **Agent Cards** = identity/capability metadata
-
-## Install & run
+## Run the verifier
 
 ```bash
 npm install
 npm run dev
 ```
 
-Then open:
+Open: `http://localhost:4173/public/verify.html`
 
-- `http://localhost:4173/public/verify.html`
+## Run the wrapped agent demo
 
-## Scope and license
+```bash
+cd examples/wrapped-agent-demo
+npm install
+npm run demo
+```
 
-This repository is the public **Commons / MIT** verifier surface.
+This writes `examples/wrapped-agent-demo/out/receipt.json` and prints the verify URL.
 
-- It does **not** include commercial hosted APIs
-- It does **not** include x402 implementation
-- It does **not** include dashboard/auth/org-account code
+## ENS signer records
 
-## CommandLayer links
+Known signer records for `runtime.commandlayer.eth`:
 
-- CommandLayer: https://www.commandlayer.org
-- Runtime repo: https://github.com/commandlayer/runtime
-- SDK repo: https://github.com/commandlayer/sdk
+- `cl.receipt.signer = runtime.commandlayer.eth`
+- `cl.sig.kid = vC4WbcNoq2znSCiQ`
+- `cl.sig.pub = ed25519:hhyCuPNoMk4JtEvGEV8F6nMZ4uDO1EcyizPufmnJTOY=`
+- `cl.sig.canonical = json.sorted_keys.v1`
+
+When live ENS text resolution is unavailable in-browser, VerifyAgent uses a clearly labeled resolver fallback for `runtime.commandlayer.eth` only.
