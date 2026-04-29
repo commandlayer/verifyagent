@@ -1,5 +1,17 @@
 # Wrap Your Agent
 
+## Live verifier
+
+https://www.commandlayer.org/verify.html
+
+## Developer wrapper demo
+
+examples/wrapped-agent-demo
+
+## Core flow
+
+Agent action → signed receipt → ENS-resolved signer key → VerifyAgent → **VERIFIED** / **INVALID**
+
 ## 1) Bring any agent
 
 Use your existing agent or function. VerifyAgent does not require a specific framework.
@@ -29,6 +41,8 @@ Sign the hash with an Ed25519 private key and emit:
 
 Reference implementation: `examples/wrapped-agent-demo/demo-agent.js`.
 
+Developers can use the wrapped-agent demo as the starting point for adding signed receipts to their own agents.
+
 ## 4) Verify publicly
 
 Paste the emitted receipt into:
@@ -37,3 +51,14 @@ Paste the emitted receipt into:
 - https://www.commandlayer.org/verify.html
 
 A valid receipt resolves signer metadata from ENS text records and returns **VERIFIED**.
+
+## Sample & tamper behavior
+
+- **Load Sample** verifies a real signed receipt.
+- **Load Tampered** changes the output while keeping the original hash/signature, proving tamper detection.
+
+## Scope note (MIT / Commons)
+
+This repo stays in MIT/Commons scope for public verification.
+It does not include x402/commercial implementation code.
+It does not claim a published npm package yet.
