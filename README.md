@@ -73,3 +73,24 @@ Known signer records for `runtime.commandlayer.eth`:
 - `cl.sig.canonical = json.sorted_keys.v1`
 
 When live ENS text resolution is unavailable in-browser, VerifyAgent uses a clearly labeled resolver fallback for `runtime.commandlayer.eth` only.
+
+## ENS signer resolution
+
+VerifyAgent treats ENS as the signer key registry for CommandLayer receipts. A receipt declares a signer such as `runtime.commandlayer.eth`. During verification, the verifier resolves that signer’s TXT records, including `cl.sig.pub` and `cl.sig.kid`, and uses the resolved public key to validate the Ed25519 signature.
+
+The browser demo includes a clearly labeled fallback resolver only for the known demo signer `runtime.commandlayer.eth` when live ENS text resolution is unavailable in-browser. This fallback is for demo reliability and does not allow unknown signers to verify.
+
+In production-style verification, signer keys should be resolved from ENS during the verification step. The receipt remains portable: any verifier can recompute the hash and validate the signature against the signer key published under ENS.
+
+### What is verified
+
+- canonical payload matches `metadata.proof.hash_sha256`
+- Ed25519 signature validates against resolved signer key
+- signer/key id matches expected ENS records when present
+- tampered input/output fails verification
+
+### What fallback does not mean
+
+- fallback does not make arbitrary signers valid
+- fallback does not bypass hash checks
+- fallback does not bypass signature checks
