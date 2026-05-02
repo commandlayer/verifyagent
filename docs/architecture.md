@@ -1,6 +1,6 @@
 # VerifyAgent Architecture
 
-VerifyAgent.eth is the public verifier and reference verifier layer for CommandLayer receipts.
+VerifyAgent.eth is the public verifier for CommandLayer receipts.
 
 ## Responsibilities
 
@@ -17,3 +17,11 @@ VerifyAgent.eth is the public verifier and reference verifier layer for CommandL
 
 This repository focuses on verification UX and core verification logic.
 If receipt fields are changed after signing, verification returns **INVALID**.
+
+
+## Canonical values
+
+- signer: `runtime.commandlayer.eth`
+- key id: `vC4WbcNoq2znSCiQ`
+- canonicalization: `json.sorted_keys.v1`
+- signature algorithm: `ed25519`

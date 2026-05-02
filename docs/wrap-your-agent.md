@@ -24,6 +24,19 @@ npm install @commandlayer/agent-sdk
 
 If `input`, `output`, or any signed field is tampered after signing, VerifyAgent returns **INVALID**.
 
+## Canonical flow
+
+- `@commandlayer/agent-sdk` creates a signed receipt.
+- VerifyAgent verifies the signed receipt.
+- A tampered signed receipt returns **INVALID**.
+
+## Canonical values
+
+- signer: `runtime.commandlayer.eth`
+- key id: `vC4WbcNoq2znSCiQ`
+- canonicalization: `json.sorted_keys.v1`
+- signature algorithm: `ed25519`
+
 ## Quickstart
 
 ```js
