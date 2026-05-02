@@ -17,13 +17,12 @@ npm install @commandlayer/agent-sdk
 - SDK npm: https://www.npmjs.com/package/@commandlayer/agent-sdk
 - SDK GitHub: https://github.com/commandlayer/agent-sdk
 
-## Current flow
+## Division of responsibility
 
-Agent action
-→ `@commandlayer/agent-sdk` wraps action
-→ signed CommandLayer receipt emitted
-→ VerifyAgent verifies receipt
-→ **VERIFIED** or **INVALID**
+- `@commandlayer/agent-sdk` creates signed receipts.
+- VerifyAgent verifies signed receipts.
+
+If `input`, `output`, or any signed field is tampered after signing, VerifyAgent returns **INVALID**.
 
 ## Quickstart
 
@@ -50,31 +49,7 @@ console.log(verified.status);
 
 ## What `wrap()` returns
 
-`wrap()` returns:
+- `output`: action result from your wrapped function
+- `receipt`: signed CommandLayer receipt
 
-- `output`: the action result from your wrapped function
-- `receipt`: a signed CommandLayer receipt
-
-The `receipt` contains:
-
-- signer
-- verb
-- input
-- output
-- execution
-- `metadata.proof.hash_sha256`
-- signature
-
-## Verification behavior
-
-Verification checks:
-
-- canonical hash
-- Ed25519 signature
-- ENS signer metadata (when available)
-
-If `input` or `output` is tampered after signing, verification returns **INVALID**.
-
-## Reference implementation
-
-`examples/wrapped-agent-demo` remains a reference implementation for how wrapping works end-to-end, but the primary developer path is the published `@commandlayer/agent-sdk` package.
+The signed receipt includes fields like signer, verb, input, output, execution, `metadata.proof.hash_sha256`, and signature.
