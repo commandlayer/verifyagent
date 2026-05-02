@@ -1,14 +1,15 @@
 # VerifyAgent
 
-VerifyAgent is a public verifier for CommandLayer receipts. It lets anyone paste a receipt, resolve signer metadata, recompute the canonical hash, verify Ed25519 signatures, and see a clear **VERIFIED** or **INVALID** result.
+VerifyAgent.eth is the public verifier for CommandLayer receipts.
 
-## Live verifier
+VerifyAgent is the reference verifier: paste or submit a receipt, resolve signer metadata, recompute the canonical hash, verify Ed25519 signatures, and return a clear **VERIFIED** or **INVALID** result.
 
-https://www.commandlayer.org/verify.html
+## Links
 
-## Developer wrapper demo (reference)
-
-examples/wrapped-agent-demo
+- Live verifier UI: https://www.commandlayer.org/verify.html
+- API verifier endpoint: https://www.commandlayer.org/api/verify
+- Callable VerifyAgent endpoint: https://www.commandlayer.org/api/agents/verifyagent
+- SDK repo: https://github.com/commandlayer/agent-sdk
 
 ## Install the SDK
 
@@ -16,32 +17,26 @@ examples/wrapped-agent-demo
 npm install @commandlayer/agent-sdk
 ```
 
-## Core flow
+## Core distinction
 
-Agent action → `@commandlayer/agent-sdk` creates signed receipt → VerifyAgent verifies receipt → **VERIFIED** / **INVALID**
+- `@commandlayer/agent-sdk` creates signed receipts.
+- VerifyAgent verifies signed receipts.
+- If a signed receipt is modified after signing, VerifyAgent returns **INVALID**.
 
-If a receipt is tampered after signing (for example, changing `input` or `output`), VerifyAgent returns **INVALID**.
+## Verification flow
 
-## What VerifyAgent is
-
-- A public verification surface for signed CommandLayer receipts.
-- A reference implementation for ENS signer metadata + receipt verification.
-
-## What VerifyAgent is not
-
-- Not agent runtime orchestration.
-- Not signer key custody.
-- Not a hosted backend dependency for verification.
-
-## Flow: Agent → Receipt → VerifyAgent → Proof
-
-1. Agent runs an action.
+1. Agent executes an action.
 2. `@commandlayer/agent-sdk` emits a signed receipt.
 3. VerifyAgent resolves signer metadata (`cl.sig.pub`, `cl.sig.kid`, `cl.sig.canonical`, `cl.receipt.signer`).
 4. VerifyAgent canonicalizes + hashes payload, then verifies Ed25519 signature.
-5. Output is **VERIFIED** or **INVALID** with explicit check fields.
+5. Result is **VERIFIED** or **INVALID** with explicit checks.
 
-## Run the verifier
+## Scope
+
+VerifyAgent is a verification surface and reference verifier implementation.
+It does not create receipts.
+
+## Run locally
 
 ```bash
 npm install
@@ -50,22 +45,12 @@ npm run dev
 
 Open: `http://localhost:4173/verify.html`
 
-## Run the wrapped agent demo (reference)
-
-```bash
-cd examples/wrapped-agent-demo
-npm install
-npm run demo
-```
-
-This writes `examples/wrapped-agent-demo/out/receipt.json` and prints the verify URL.
-
-## Sample & tamper checks
+## Sample and tamper checks
 
 - **Load Sample** verifies a real signed receipt.
-- **Load Tampered** changes the output while keeping the original hash/signature, proving tamper detection.
-- `examples/sample-receipt.json` is a public sample that verifies as **VERIFIED**.
-- `examples/tampered-receipt.json` is derived from the sample, with one signed field changed while hash/signature are unchanged, and verifies as **INVALID**.
+- **Load Tampered** changes output while keeping original hash/signature to demonstrate tamper detection.
+- `examples/sample-receipt.json` verifies as **VERIFIED**.
+- `examples/tampered-receipt.json` verifies as **INVALID**.
 
 ## ENS signer records
 
