@@ -1,64 +1,80 @@
 # Wrap Your Agent
 
-## Live verifier
+## VerifyAgent positioning
 
-https://www.commandlayer.org/verify.html
+VerifyAgent.eth is the public verifier for CommandLayer receipts.
 
-## Developer wrapper demo
+- Live verifier UI: https://www.commandlayer.org/verify.html
+- API verifier: https://www.commandlayer.org/api/verify
+- Callable VerifyAgent: https://www.commandlayer.org/api/agents/verifyagent
 
-examples/wrapped-agent-demo
+## Install the SDK
 
-## Core flow
+```bash
+npm install @commandlayer/agent-sdk
+```
 
-Agent action → signed receipt → ENS-resolved signer key → VerifyAgent → **VERIFIED** / **INVALID**
+- SDK npm: https://www.npmjs.com/package/@commandlayer/agent-sdk
+- SDK GitHub: https://github.com/commandlayer/agent-sdk
 
-## 1) Bring any agent
+## Current flow
 
-Use your existing agent or function. VerifyAgent does not require a specific framework.
+Agent action
+→ `@commandlayer/agent-sdk` wraps action
+→ signed CommandLayer receipt emitted
+→ VerifyAgent verifies receipt
+→ **VERIFIED** or **INVALID**
 
-## 2) Wrap the action
+## Quickstart
 
-Capture a normalized action payload:
+```js
+import { CommandLayer } from "@commandlayer/agent-sdk";
 
-- signer ENS name
-- action verb
-- timestamp
+const cl = new CommandLayer({
+  agent: "runtime.commandlayer.eth",
+  privateKey: process.env.CL_PRIVATE_KEY_PEM,
+  keyId: "vC4WbcNoq2znSCiQ",
+  verifierUrl: "https://www.commandlayer.org/api/verify"
+});
+
+const result = await cl.wrap("summarize", async () => {
+  return { summary: "hello world" };
+});
+
+console.log(result.output);
+console.log(result.receipt);
+
+const verified = await cl.verify(result.receipt);
+console.log(verified.status);
+```
+
+## What `wrap()` returns
+
+`wrap()` returns:
+
+- `output`: the action result from your wrapped function
+- `receipt`: a signed CommandLayer receipt
+
+The `receipt` contains:
+
+- signer
+- verb
 - input
 - output
-- runtime metadata
-
-Canonicalize using `json.sorted_keys.v1`, then SHA-256 hash that canonical JSON.
-
-## 3) Emit a receipt
-
-Sign the hash with an Ed25519 private key and emit:
-
-- `metadata.proof.canonicalization`
+- execution
 - `metadata.proof.hash_sha256`
-- `signature.alg`
-- `signature.kid`
-- `signature.sig`
+- signature
 
-Reference implementation: `examples/wrapped-agent-demo/demo-agent.js`.
+## Verification behavior
 
-Developers can use the wrapped-agent demo as the starting point for adding signed receipts to their own agents.
+Verification checks:
 
-## 4) Verify publicly
+- canonical hash
+- Ed25519 signature
+- ENS signer metadata (when available)
 
-Paste the emitted receipt into:
+If `input` or `output` is tampered after signing, verification returns **INVALID**.
 
-- `public/verify.html` in this repo, or
-- https://www.commandlayer.org/verify.html
+## Reference implementation
 
-A valid receipt resolves signer metadata from ENS text records and returns **VERIFIED**.
-
-## Sample & tamper behavior
-
-- **Load Sample** verifies a real signed receipt.
-- **Load Tampered** changes the output while keeping the original hash/signature, proving tamper detection.
-
-## Scope note (MIT / Commons)
-
-This repo stays in MIT/Commons scope for public verification.
-It does not include x402/commercial implementation code.
-It does not claim a published npm package yet.
+`examples/wrapped-agent-demo` remains a reference implementation for how wrapping works end-to-end, but the primary developer path is the published `@commandlayer/agent-sdk` package.
