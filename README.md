@@ -17,11 +17,11 @@ VerifyAgent is the reference verifier: paste or submit a receipt, resolve signer
 npm install @commandlayer/agent-sdk
 ```
 
-## Core distinction
+## Canonical flow
 
-- `@commandlayer/agent-sdk` creates signed receipts.
-- VerifyAgent verifies signed receipts.
-- If a signed receipt is modified after signing, VerifyAgent returns **INVALID**.
+- `@commandlayer/agent-sdk` creates a signed receipt.
+- VerifyAgent verifies the signed receipt.
+- A tampered signed receipt returns **INVALID**.
 
 ## Verification flow
 
@@ -51,6 +51,13 @@ Open: `http://localhost:4173/verify.html`
 - **Load Tampered** changes output while keeping original hash/signature to demonstrate tamper detection.
 - `examples/sample-receipt.json` verifies as **VERIFIED**.
 - `examples/tampered-receipt.json` verifies as **INVALID**.
+
+## Canonical values
+
+- signer: `runtime.commandlayer.eth`
+- key id: `vC4WbcNoq2znSCiQ`
+- canonicalization: `json.sorted_keys.v1`
+- signature algorithm: `ed25519`
 
 ## ENS signer records
 
