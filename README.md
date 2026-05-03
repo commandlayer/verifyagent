@@ -69,7 +69,7 @@ Known signer records for `runtime.commandlayer.eth`:
 - `cl.sig.canonical = json.sorted_keys.v1`
 
 VerifyAgent resolves signer keys from ENS TXT records.
-For the hackathon demo, `runtime.commandlayer.eth` is supported via a labeled fallback resolver that mirrors the ENS record structure.
+Fallback is a local demo fallback for runtime.commandlayer.eth only, mirroring the ENS record structure.
 The verification flow is designed to operate against live ENS records.
 
 VerifyAgent.eth is designed to be discoverable as a verifier for ENS-named agents, enabling independent verification across agent ecosystems.

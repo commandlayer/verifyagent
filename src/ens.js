@@ -44,7 +44,7 @@ export async function resolveSignerFromEns(signerEnsName, options = {}) {
       signer: signerEnsName,
       records: { ...FALLBACK_RECORDS },
       ensResolved: true,
-      keySource: 'local demo fallback (runtime.commandlayer.eth only)'
+      keySource: 'local demo fallback for runtime.commandlayer.eth only'
     };
   }
 
