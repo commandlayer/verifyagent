@@ -1,6 +1,6 @@
 # VerifyAgent
 
-VerifyAgent.eth is the public verifier for CommandLayer receipts.
+VerifyAgent.eth is the public verifier for receipts produced by ENS-named agents.
 
 VerifyAgent is the reference verifier: paste or submit a receipt, resolve signer metadata, recompute the canonical hash, verify Ed25519 signatures, and return a clear **VERIFIED** or **INVALID** result.
 
@@ -27,7 +27,7 @@ npm install @commandlayer/agent-sdk
 
 1. Agent executes an action.
 2. `@commandlayer/agent-sdk` emits a signed receipt.
-3. VerifyAgent resolves signer metadata (`cl.sig.pub`, `cl.sig.kid`, `cl.sig.canonical`, `cl.receipt.signer`).
+3. VerifyAgent resolves signer identity and verification metadata from ENS (`cl.sig.pub`, `cl.sig.kid`, `cl.sig.canonical`, `cl.receipt.signer`).
 4. VerifyAgent canonicalizes + hashes payload, then verifies Ed25519 signature.
 5. Result is **VERIFIED** or **INVALID** with explicit checks.
 
@@ -68,4 +68,8 @@ Known signer records for `runtime.commandlayer.eth`:
 - `cl.sig.pub = ed25519:A5Q4Ff6BA8y/U0BxJcj8utWm8UemKGHRMCPQyoKRZQs=`
 - `cl.sig.canonical = json.sorted_keys.v1`
 
-When live ENS text resolution is unavailable in-browser, VerifyAgent uses a clearly labeled resolver fallback for `runtime.commandlayer.eth` only.
+VerifyAgent resolves signer keys from ENS TXT records.
+For the hackathon demo, `runtime.commandlayer.eth` is supported via a labeled fallback resolver that mirrors the ENS record structure.
+The verification flow is designed to operate against live ENS records.
+
+VerifyAgent.eth is designed to be discoverable as a verifier for ENS-named agents, enabling independent verification across agent ecosystems.
