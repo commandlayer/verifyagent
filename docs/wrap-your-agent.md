@@ -2,7 +2,7 @@
 
 ## VerifyAgent positioning
 
-VerifyAgent.eth is the public verifier for CommandLayer receipts.
+VerifyAgent.eth is the public verifier for receipts produced by ENS-named agents.
 
 - Live verifier UI: https://www.commandlayer.org/verify.html
 - API verifier: https://www.commandlayer.org/api/verify
