@@ -11,4 +11,4 @@
 - Removed placeholder signature verification and removed acceptance of `DEMO_SIGNATURE_VALID_FOR_HASH`.
 
 ## 0.1.0 - 2026-04-28
-- Initialized VerifyAgent as its own public Commons/MIT repository for verifying CommandLayer receipts.
+- Initialized VerifyAgent as its own public verifier repository for receipts produced by ENS-named agents.

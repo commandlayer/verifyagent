@@ -2,7 +2,7 @@
 
 VerifyAgent.eth is the public verifier for receipts produced by ENS-named agents.
 
-VerifyAgent is the reference verifier: paste or submit a receipt, resolve signer metadata, recompute the canonical hash, verify Ed25519 signatures, and return a clear **VERIFIED** or **INVALID** result.
+VerifyAgent is the reference verifier: paste or submit a receipt, resolve signer identity and verification metadata from ENS, recompute the canonical hash, verify Ed25519 signatures, and return a clear **VERIFIED** or **INVALID** result.
 
 ## Links
 

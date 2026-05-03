@@ -1,12 +1,12 @@
 # VerifyAgent Architecture
 
-VerifyAgent.eth is the public verifier for CommandLayer receipts.
+VerifyAgent.eth is the public verifier for receipts produced by ENS-named agents.
 
 ## Responsibilities
 
 - **VerifyAgent** verifies receipts.
 - **SDK (`@commandlayer/agent-sdk`)** creates signed receipts.
-- **ENS** resolves signer keys (such as `cl.sig.pub`) for signer identity.
+- **ENS** resolves signer identity and verification metadata from ENS TXT records (including `cl.sig.pub`, `cl.sig.kid`, `cl.sig.canonical`, and `cl.receipt.signer`).
 
 ## Role boundaries
 
