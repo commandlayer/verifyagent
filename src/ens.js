@@ -2,7 +2,7 @@ const FALLBACK_SIGNER = 'runtime.commandlayer.eth';
 const FALLBACK_RECORDS = {
   'cl.receipt.signer': 'runtime.commandlayer.eth',
   'cl.sig.kid': 'vC4WbcNoq2znSCiQ',
-  'cl.sig.pub': 'ed25519:A5Q4Ff6BA8y/U0BxJcj8utWm8UemKGHRMCPQyoKRZQs=',
+  'cl.sig.pub': 'ed25519:hhyCuPNoMk4JtEvGEV8F6nMZ4uDO1EcyizPufmnJTOY=',
   'cl.sig.canonical': 'json.sorted_keys.v1'
 };
 
@@ -44,7 +44,7 @@ export async function resolveSignerFromEns(signerEnsName, options = {}) {
       signer: signerEnsName,
       records: { ...FALLBACK_RECORDS },
       ensResolved: true,
-      keySource: 'local demo fallback (runtime.commandlayer.eth only)'
+      keySource: 'local demo fallback for runtime.commandlayer.eth only'
     };
   }
 

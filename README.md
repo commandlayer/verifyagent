@@ -65,11 +65,11 @@ Known signer records for `runtime.commandlayer.eth`:
 
 - `cl.receipt.signer = runtime.commandlayer.eth`
 - `cl.sig.kid = vC4WbcNoq2znSCiQ`
-- `cl.sig.pub = ed25519:A5Q4Ff6BA8y/U0BxJcj8utWm8UemKGHRMCPQyoKRZQs=`
+- `cl.sig.pub = ed25519:hhyCuPNoMk4JtEvGEV8F6nMZ4uDO1EcyizPufmnJTOY=`
 - `cl.sig.canonical = json.sorted_keys.v1`
 
 VerifyAgent resolves signer keys from ENS TXT records.
-For the hackathon demo, `runtime.commandlayer.eth` is supported via a labeled fallback resolver that mirrors the ENS record structure.
+Fallback is a local demo fallback for runtime.commandlayer.eth only, mirroring the ENS record structure.
 The verification flow is designed to operate against live ENS records.
 
 VerifyAgent.eth is designed to be discoverable as a verifier for ENS-named agents, enabling independent verification across agent ecosystems.
