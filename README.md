@@ -28,8 +28,9 @@ npm install @commandlayer/agent-sdk
 1. Agent executes an action.
 2. `@commandlayer/agent-sdk` emits a signed receipt.
 3. VerifyAgent resolves signer identity and verification metadata from ENS (`cl.sig.pub`, `cl.sig.kid`, `cl.sig.canonical`, `cl.receipt.signer`).
-4. VerifyAgent canonicalizes + hashes payload, then verifies Ed25519 signature.
-5. Result is **VERIFIED** or **INVALID** with explicit checks.
+4. VerifyAgent parses and applies a schema validation phase (legacy or CLAS Trust Verification v1 shape).
+5. VerifyAgent canonicalizes + hashes payload, then verifies Ed25519 signature.
+6. Result is **VERIFIED** or **INVALID** with explicit checks.
 
 ## Scope
 
@@ -73,3 +74,10 @@ Fallback is a local demo fallback for runtime.commandlayer.eth only, mirroring t
 The verification flow is designed to operate against live ENS records.
 
 VerifyAgent.eth is designed to be discoverable as a verifier for ENS-named agents, enabling independent verification across agent ecosystems.
+
+## Validation semantics
+
+- `checks.schema_valid` indicates receipt structure validity for the detected mode (`legacy` or `clas_v1`).
+- `checks.hash_matched` and `checks.signature_valid` indicate cryptographic validity.
+- Legacy compatibility is preserved: legacy validity remains `hash_matched && signature_valid`.
+- CLAS v1 validity is currently `schema_valid && hash_matched && signature_valid`.

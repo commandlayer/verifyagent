@@ -18,20 +18,95 @@ function bytesToPem(bytes) {
   return `-----BEGIN PRIVATE KEY-----\n${lines}\n-----END PRIVATE KEY-----`;
 }
 
-test('sample receipt verifies', async () => {
+function toClasV1(receipt, overrides = {}) {
+  return {
+    ...receipt,
+    family: 'clas_trust_verification',
+    version: 'clas_trust_verification.v1',
+    metadata: {
+      ...receipt.metadata,
+      family: 'clas_trust_verification',
+      version: 'v1',
+      proof: {
+        ...receipt.metadata?.proof,
+        trust_verb: 'verify',
+        ...overrides.proof
+      }
+    },
+    ...overrides
+  };
+}
+
+test('legacy sample receipt verifies (compatibility)', async () => {
   const sample = await loadJson(samplePath);
   const result = await verifyReceipt(sample);
 
   assert.equal(result.status, 'VERIFIED');
+  assert.equal(result.checks.schema_valid, true);
   assert.equal(result.checks.hash_matched, true);
   assert.equal(result.checks.signature_valid, true);
 });
 
-test('tampered receipt fails verification', async () => {
+test('legacy tampered receipt fails verification', async () => {
   const tampered = await loadJson(tamperedPath);
   const result = await verifyReceipt(tampered);
 
   assert.equal(result.status, 'INVALID');
+  assert.equal(result.checks.schema_valid, true);
+});
+
+test('clas v1 schema-valid + crypto-valid verifies', async () => {
+  const sample = await loadJson(samplePath);
+  const clasReceipt = toClasV1(sample);
+  const result = await verifyReceipt(clasReceipt);
+
+  assert.equal(result.status, 'VERIFIED');
+  assert.equal(result.checks.schema_valid, true);
+  assert.equal(result.checks.trust_verb, 'verify');
+  assert.equal(result.checks.trust_verb_identified, true);
+});
+
+test('clas v1 schema-valid + tampered fails', async () => {
+  const tampered = await loadJson(tamperedPath);
+  const clasTampered = toClasV1(tampered);
+  const result = await verifyReceipt(clasTampered);
+
+  assert.equal(result.status, 'INVALID');
+  assert.equal(result.checks.schema_valid, true);
+  assert.equal(result.checks.hash_matched, false);
+});
+
+test('clas v1 invalid schema fails despite valid crypto', async () => {
+  const sample = await loadJson(samplePath);
+  const invalidSchema = toClasV1(sample, {
+    proof: { trust_verb: undefined }
+  });
+  delete invalidSchema.metadata.proof.trust_verb;
+
+  const result = await verifyReceipt(invalidSchema);
+
+  assert.equal(result.checks.hash_matched, true);
+  assert.equal(result.checks.signature_valid, true);
+  assert.equal(result.checks.schema_valid, false);
+  assert.equal(result.status, 'INVALID');
+});
+
+test('unknown trust verb does not crash verification', async () => {
+  const sample = await loadJson(samplePath);
+  const clasReceipt = toClasV1(sample, { proof: { trust_verb: 'negotiate' } });
+  const result = await verifyReceipt(clasReceipt);
+
+  assert.equal(result.checks.trust_verb, null);
+  assert.equal(result.checks.trust_verb_identified, false);
+  assert.equal(result.status, 'VERIFIED');
+});
+
+test('signer resolution and signer match checks are populated', async () => {
+  const sample = await loadJson(samplePath);
+  const result = await verifyReceipt(sample);
+
+  assert.equal(result.checks.signer_resolved, true);
+  assert.equal(result.checks.signer_matched, true);
 });
 
 test('DEMO_SIGNATURE_VALID_FOR_HASH is rejected', async () => {

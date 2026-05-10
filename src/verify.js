@@ -1,6 +1,7 @@
 import { canonicalize } from './canonicalize.js';
 import { resolveSignerFromEns } from './ens.js';
 import { importEd25519PublicKey, sha256Hex, verifyHashHexSignature } from './crypto.js';
+import { detectReceiptMode, normalizeTrustVerb, validateClasTrustV1Shape, validateLegacyReceiptShape } from './schema.js';
 
 export function canonicalReceiptPayload(receipt) {
   return {
@@ -22,8 +23,13 @@ function invalidResult(overrides = {}) {
     publicKeySource: 'not resolved',
     canonicalization: null,
     checks: {
+      schema_valid: false,
       hash_matched: false,
-      signature_valid: false
+      signature_valid: false,
+      signer_resolved: false,
+      signer_matched: false,
+      trust_verb_identified: false,
+      trust_verb: null
     },
     ...overrides
   };
@@ -37,6 +43,11 @@ export async function verifyReceipt(receiptInput, options = {}) {
     return invalidResult();
   }
 
+  const mode = detectReceiptMode(receipt);
+  const schemaValid = mode === 'clas_v1'
+    ? validateClasTrustV1Shape(receipt)
+    : validateLegacyReceiptShape(receipt);
+
   const ens = await resolveSignerFromEns(receipt?.signer, options.ens || {});
   const expectedHash = receipt?.metadata?.proof?.hash_sha256;
   const canonicalization = receipt?.metadata?.proof?.canonicalization;
@@ -49,6 +60,11 @@ export async function verifyReceipt(receiptInput, options = {}) {
   const hashMatched = canonicalizationOk && typeof expectedHash === 'string' && expectedHash === recomputedHash;
 
   const keyIdMatches = receipt?.signature?.kid === ens.records['cl.sig.kid'];
+  const signerResolved = Boolean(ens.records['cl.sig.pub'] && ens.records['cl.sig.kid']);
+  const signerMatched = Boolean(receipt?.signer && ens.records['cl.receipt.signer'] && receipt.signer === ens.records['cl.receipt.signer']);
+  const trustVerbCandidate = receipt?.metadata?.proof?.trust_verb ?? receipt?.metadata?.proof?.trustVerb ?? receipt?.verb;
+  const trustVerb = normalizeTrustVerb(trustVerbCandidate);
+  const trustVerbIdentified = trustVerb !== null;
   const prefixedPub = ens.records['cl.sig.pub'];
   const pubkeyBase64 = typeof prefixedPub === 'string' ? prefixedPub.replace(/^ed25519:/, '') : null;
 
@@ -62,7 +78,9 @@ export async function verifyReceipt(receiptInput, options = {}) {
     }
   }
 
-  const valid = hashMatched && signatureValid;
+  const valid = mode === 'clas_v1'
+    ? schemaValid && hashMatched && signatureValid
+    : hashMatched && signatureValid;
   return {
     valid,
     status: valid ? 'VERIFIED' : 'INVALID',
@@ -71,8 +89,13 @@ export async function verifyReceipt(receiptInput, options = {}) {
     publicKeySource: ens.keySource,
     canonicalization: canonicalization || null,
     checks: {
+      schema_valid: schemaValid,
       hash_matched: hashMatched,
-      signature_valid: signatureValid
+      signature_valid: signatureValid,
+      signer_resolved: signerResolved,
+      signer_matched: signerMatched,
+      trust_verb_identified: trustVerbIdentified,
+      trust_verb: trustVerb
     },
     debug: {
       recomputed_hash_sha256: recomputedHash,
