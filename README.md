@@ -77,7 +77,23 @@ VerifyAgent.eth is designed to be discoverable as a verifier for ENS-named agent
 
 ## Validation semantics
 
-- `checks.schema_valid` indicates receipt structure validity for the detected mode (`legacy` or `clas_v1`).
-- `checks.hash_matched` and `checks.signature_valid` indicate cryptographic validity.
-- Legacy compatibility is preserved: legacy validity remains `hash_matched && signature_valid`.
-- CLAS v1 validity is currently `schema_valid && hash_matched && signature_valid`.
+`checks.schema_valid` indicates receipt structure validity for the detected mode (`legacy` or `clas_v1`).
+
+`checks.hash_matched` and `checks.signature_valid` indicate cryptographic validity.
+
+- Legacy validity: `hash_matched && signature_valid`
+- CLAS v1 validity: `schema_valid && hash_matched && signature_valid`
+
+Full `checks` object:
+
+| Field | Meaning |
+|---|---|
+| `schema_valid` | Receipt shape matches the detected mode |
+| `hash_matched` | Recomputed hash equals stored hash, canonicalization matches ENS |
+| `signature_valid` | Ed25519 signature verifies against ENS-resolved public key |
+| `signer_resolved` | `cl.sig.pub` and `cl.sig.kid` were resolved from ENS |
+| `signer_matched` | `receipt.signer` matches `cl.receipt.signer` from ENS |
+| `trust_verb_identified` | A recognized trust verb was found (clas_v1 only) |
+| `trust_verb` | Normalized trust verb, or `null` |
+
+The response also includes a `debug` object with `recomputed_hash_sha256`, `expected_hash_sha256`, and `key_id_matched` for diagnostic use.
