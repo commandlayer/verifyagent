@@ -1,6 +1,10 @@
 # VerifyAgent
 
-VerifyAgent.eth is the public verifier for receipts produced by ENS-named agents.
+VerifyAgent is a public verifier for machine-action receipts and CLAS Trust Verification payloads.
+
+ENS may be used for signer discovery, key resolution, and agent identity metadata.
+
+VerifyAgent supports CLAS Trust Verification v1 receipts while preserving compatibility with legacy CommandLayer receipts.
 
 VerifyAgent is the reference verifier: paste or submit a receipt, resolve signer identity and verification metadata from ENS, recompute the canonical hash, verify Ed25519 signatures, and return a clear **VERIFIED** or **INVALID** result.
 
@@ -53,7 +57,7 @@ Open: `http://localhost:4173/verify.html`
 - `examples/sample-receipt.json` verifies as **VERIFIED**.
 - `examples/tampered-receipt.json` verifies as **INVALID**.
 
-## Canonical values
+## Reference signer profile
 
 - signer: `runtime.commandlayer.eth`
 - key id: `vC4WbcNoq2znSCiQ`
@@ -73,7 +77,7 @@ VerifyAgent resolves signer keys from ENS TXT records.
 Fallback is a local demo fallback for runtime.commandlayer.eth only, mirroring the ENS record structure.
 The verification flow is designed to operate against live ENS records.
 
-VerifyAgent.eth is designed to be discoverable as a verifier for ENS-named agents, enabling independent verification across agent ecosystems.
+VerifyAgent is designed to be discoverable as a verifier across agent ecosystems, with ENS supporting signer discovery and identity resolution.
 
 ## Validation semantics
 
