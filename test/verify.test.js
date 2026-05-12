@@ -59,13 +59,18 @@ test('legacy tampered receipt fails verification', async () => {
 });
 
 
-test('canonical CLAS family/version are accepted and trust verb comes from receipt.verb', async () => {
+test('canonical CLAS valid fixture is cryptographically valid and trust verify is identified', async () => {
   const clasValid = await loadJson(clasValidPath);
   const result = await verifyReceipt(clasValid);
 
+  assert.equal(result.status, 'VERIFIED');
   assert.equal(result.checks.schema_valid, true);
-  assert.equal(result.checks.trust_verb, 'verify');
+  assert.equal(result.checks.hash_matched, true);
+  assert.equal(result.checks.signature_valid, true);
+  assert.equal(result.checks.signer_resolved, true);
+  assert.equal(result.checks.signer_matched, true);
   assert.equal(result.checks.trust_verb_identified, true);
+  assert.equal(result.checks.trust_verb, 'verify');
 });
 
 test('canonical CLAS tampered fixture is schema-valid but fails hash/signature proof', async () => {
