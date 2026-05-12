@@ -1,0 +1,30 @@
+{
+  "$id": "https://schemas.commandlayer.local/clas/trust-verification/verbs/receipt.base.schema.json",
+  "type": "object",
+  "required": ["signer", "verb", "metadata", "signature"],
+  "properties": {
+    "family": { "type": "string", "enum": ["trust-verification", "clas_trust_verification"] },
+    "version": { "type": "string", "enum": ["1.0.0", "clas_trust_verification.v1", "v1"] },
+    "signer": { "type": "string", "minLength": 1 },
+    "verb": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["proof"],
+      "properties": {
+        "proof": { "$ref": "../_shared/proof.schema.json" }
+      },
+      "additionalProperties": true
+    },
+    "signature": {
+      "type": "object",
+      "required": ["alg", "kid", "sig"],
+      "properties": {
+        "alg": { "type": "string", "minLength": 1 },
+        "kid": { "type": "string", "minLength": 1 },
+        "sig": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
