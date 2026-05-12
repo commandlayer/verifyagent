@@ -62,7 +62,9 @@ export async function verifyReceipt(receiptInput, options = {}) {
   const keyIdMatches = receipt?.signature?.kid === ens.records['cl.sig.kid'];
   const signerResolved = Boolean(ens.records['cl.sig.pub'] && ens.records['cl.sig.kid']);
   const signerMatched = Boolean(receipt?.signer && ens.records['cl.receipt.signer'] && receipt.signer === ens.records['cl.receipt.signer']);
-  const trustVerbCandidate = receipt?.metadata?.proof?.trust_verb ?? receipt?.metadata?.proof?.trustVerb ?? receipt?.verb;
+  const trustVerbCandidate = mode === 'clas_v1'
+    ? (receipt?.verb ?? receipt?.metadata?.proof?.trust_verb ?? receipt?.metadata?.proof?.trustVerb)
+    : (receipt?.metadata?.proof?.trust_verb ?? receipt?.metadata?.proof?.trustVerb ?? receipt?.verb);
   const trustVerb = normalizeTrustVerb(trustVerbCandidate);
   const trustVerbIdentified = trustVerb !== null;
   const prefixedPub = ens.records['cl.sig.pub'];

@@ -26,10 +26,15 @@ export function detectReceiptMode(receipt) {
   const proof = metadata?.proof;
 
   const clasIndicators = [
+    receipt?.version === '1.0.0',
+    receipt?.family === 'trust-verification',
     receipt?.version === 'clas_trust_verification.v1',
     receipt?.family === 'clas_trust_verification',
+    metadata?.family === 'trust-verification',
+    metadata?.version === '1.0.0',
     metadata?.family === 'clas_trust_verification',
     metadata?.version === 'v1',
+    normalizeTrustVerb(receipt?.verb) !== null,
     hasString(proof?.trust_verb),
     hasString(proof?.trustVerb),
     isObject(proof?.trust)
@@ -57,11 +62,20 @@ export function validateClasTrustV1Shape(receipt) {
 
   const metadata = receipt.metadata;
   const proof = metadata?.proof;
-  const versionOk = receipt?.version === 'clas_trust_verification.v1' || metadata?.version === 'v1';
-  const familyOk = receipt?.family === 'clas_trust_verification' || metadata?.family === 'clas_trust_verification';
+  const versionOk = receipt?.version === '1.0.0'
+    || metadata?.version === '1.0.0'
+    || receipt?.version === 'clas_trust_verification.v1'
+    || metadata?.version === 'v1';
+  const familyOk = receipt?.family === 'trust-verification'
+    || metadata?.family === 'trust-verification'
+    || receipt?.family === 'clas_trust_verification'
+    || metadata?.family === 'clas_trust_verification';
 
   return versionOk && familyOk && (
-    hasString(proof?.trust_verb)
+    normalizeTrustVerb(receipt?.verb) !== null
+    || normalizeTrustVerb(proof?.trust_verb) !== null
+    || normalizeTrustVerb(proof?.trustVerb) !== null
+    || hasString(proof?.trust_verb)
     || hasString(proof?.trustVerb)
     || isObject(proof?.trust)
   );
