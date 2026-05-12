@@ -2,7 +2,7 @@ const FALLBACK_SIGNER = 'runtime.commandlayer.eth';
 const FALLBACK_RECORDS = {
   'cl.receipt.signer': 'runtime.commandlayer.eth',
   'cl.sig.kid': 'vC4WbcNoq2znSCiQ',
-  'cl.sig.pub': 'ed25519:hhyCuPNoMk4JtEvGEV8F6nMZ4uDO1EcyizPufmnJTOY=',
+  'cl.sig.pub': 'ed25519:trSRcjBVbLt+dz8LMuIwMooTwCyeW8UddfGXu/cVbLc=',
   'cl.sig.canonical': 'json.sorted_keys.v1'
 };
 

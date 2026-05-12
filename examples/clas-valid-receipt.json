@@ -1,8 +1,5 @@
 {
-  "family": "trust-verification",
-  "version": "1.0.0",
   "signer": "runtime.commandlayer.eth",
-  "verb": "verify",
   "ts": "2026-04-29T01:32:57.167Z",
   "input": {
     "task": "summarize",
@@ -16,15 +13,18 @@
     "runtime": "wrapped-agent-demo",
     "run_id": "run_1777426377167"
   },
+  "family": "trust-verification",
+  "version": "1.0.0",
+  "verb": "verify",
   "metadata": {
     "proof": {
       "canonicalization": "json.sorted_keys.v1",
-      "hash_sha256": "4ff674e92434833a00a8f9aac6941a7962b19bf7472f6d4a184ae54168dfc379"
+      "hash_sha256": "249307a047d422d0eea8f5c5b3407aa38f4387c02bd00034218fb34df34c28a8"
     }
   },
   "signature": {
     "alg": "ed25519",
     "kid": "vC4WbcNoq2znSCiQ",
-    "sig": "kpnRCnN2Eg7d3g/nqvRXpEed7qS6Y9/JLyXyU2iQwvP6G2D/h75bcQgKRD2yJaJ/yVN/Ug7//ngrnga8UxUbDw=="
+    "sig": "QD0d3q2NvcGoPjeglDWOxU+aqIQyUttDzKOKPiBodNEGzxgIBWvRlPixryRetBFH3gVNfna4fvdGaVlFNWTdAA=="
   }
 }
