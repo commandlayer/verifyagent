@@ -1,0 +1,10 @@
+{
+  "$id": "https://schemas.commandlayer.local/clas/trust-verification/_shared/proof.schema.json",
+  "type": "object",
+  "required": ["canonicalization", "hash_sha256"],
+  "properties": {
+    "canonicalization": { "type": "string", "minLength": 1 },
+    "hash_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "additionalProperties": true
+}

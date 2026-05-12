@@ -91,14 +91,15 @@ test('canonical CLAS invalid fixture fails schema validation', async () => {
   assert.equal(result.status, 'INVALID');
 });
 
-test('unknown trust verb does not crash verification', async () => {
+test('invalid enum/verb fails schema validation', async () => {
   const sample = await loadJson(samplePath);
-  const clasReceipt = toClasV1(sample, { proof: { trust_verb: 'negotiate' } });
+  const clasReceipt = toClasV1(sample, { verb: 'negotiate', proof: { trust_verb: 'negotiate' } });
   const result = await verifyReceipt(clasReceipt);
 
   assert.equal(result.checks.trust_verb, null);
   assert.equal(result.checks.trust_verb_identified, false);
-  assert.equal(result.status, 'VERIFIED');
+  assert.equal(result.checks.schema_valid, false);
+  assert.equal(result.status, 'INVALID');
 });
 
 test('signer resolution and signer match checks are populated', async () => {
@@ -162,4 +163,25 @@ test('wrapper-generated receipt verifies with verifyReceipt', async () => {
   assert.equal(result.status, 'VERIFIED');
   assert.equal(result.checks.hash_matched, true);
   assert.equal(result.checks.signature_valid, true);
+});
+
+
+test('missing required CLAS field fails schema validation', async () => {
+  const clasValid = await loadJson(clasValidPath);
+  const missingSig = structuredClone(clasValid);
+  delete missingSig.signature;
+  const result = await verifyReceipt(missingSig);
+
+  assert.equal(result.checks.schema_valid, false);
+  assert.equal(result.status, 'INVALID');
+});
+
+test('shared proof $ref resolution works (invalid hash format fails)', async () => {
+  const clasValid = await loadJson(clasValidPath);
+  const badProof = structuredClone(clasValid);
+  badProof.metadata.proof.hash_sha256 = 'not-a-sha256';
+  const result = await verifyReceipt(badProof);
+
+  assert.equal(result.checks.schema_valid, false);
+  assert.equal(result.status, 'INVALID');
 });

@@ -101,3 +101,16 @@ Full `checks` object:
 | `trust_verb` | Normalized trust verb, or `null` |
 
 The response also includes a `debug` object with `recomputed_hash_sha256`, `expected_hash_sha256`, and `key_id_matched` for diagnostic use.
+
+
+## CLAS schema bundling
+
+VerifyAgent validates CLAS Trust Verification receipts with JSON Schema using a generated bundle (`src/generated/clas-schema-map.js`).
+
+Schemas are bundled ahead of tests/build to avoid runtime network dependencies.
+
+Regenerate with:
+
+```bash
+npm run build:clas-schemas
+```
