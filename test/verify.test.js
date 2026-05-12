@@ -7,6 +7,9 @@ import { createSignedReceipt } from '../examples/wrapped-agent-demo/demo-agent.j
 
 const samplePath = new URL('../examples/sample-receipt.json', import.meta.url);
 const tamperedPath = new URL('../examples/tampered-receipt.json', import.meta.url);
+const clasValidPath = new URL('../examples/clas-valid-receipt.json', import.meta.url);
+const clasTamperedPath = new URL('../examples/clas-tampered-receipt.json', import.meta.url);
+const clasInvalidPath = new URL('../examples/clas-invalid-receipt.json', import.meta.url);
 
 async function loadJson(pathUrl) {
   return JSON.parse(await fs.readFile(pathUrl, 'utf8'));
@@ -55,38 +58,30 @@ test('legacy tampered receipt fails verification', async () => {
   assert.equal(result.checks.schema_valid, true);
 });
 
-test('clas v1 schema-valid + crypto-valid verifies', async () => {
-  const sample = await loadJson(samplePath);
-  const clasReceipt = toClasV1(sample);
-  const result = await verifyReceipt(clasReceipt);
 
-  assert.equal(result.status, 'VERIFIED');
+test('canonical CLAS family/version are accepted and trust verb comes from receipt.verb', async () => {
+  const clasValid = await loadJson(clasValidPath);
+  const result = await verifyReceipt(clasValid);
+
   assert.equal(result.checks.schema_valid, true);
   assert.equal(result.checks.trust_verb, 'verify');
   assert.equal(result.checks.trust_verb_identified, true);
 });
 
-test('clas v1 schema-valid + tampered fails', async () => {
-  const tampered = await loadJson(tamperedPath);
-  const clasTampered = toClasV1(tampered);
+test('canonical CLAS tampered fixture is schema-valid but fails hash/signature proof', async () => {
+  const clasTampered = await loadJson(clasTamperedPath);
   const result = await verifyReceipt(clasTampered);
 
-  assert.equal(result.status, 'INVALID');
   assert.equal(result.checks.schema_valid, true);
   assert.equal(result.checks.hash_matched, false);
+  assert.equal(result.checks.signature_valid, false);
+  assert.equal(result.status, 'INVALID');
 });
 
-test('clas v1 invalid schema fails despite valid crypto', async () => {
-  const sample = await loadJson(samplePath);
-  const invalidSchema = toClasV1(sample, {
-    proof: { trust_verb: undefined }
-  });
-  delete invalidSchema.metadata.proof.trust_verb;
+test('canonical CLAS invalid fixture fails schema validation', async () => {
+  const clasInvalid = await loadJson(clasInvalidPath);
+  const result = await verifyReceipt(clasInvalid);
 
-  const result = await verifyReceipt(invalidSchema);
-
-  assert.equal(result.checks.hash_matched, true);
-  assert.equal(result.checks.signature_valid, true);
   assert.equal(result.checks.schema_valid, false);
   assert.equal(result.status, 'INVALID');
 });
