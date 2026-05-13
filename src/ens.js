@@ -1,10 +1,7 @@
-const FALLBACK_SIGNER = 'runtime.commandlayer.eth';
-const FALLBACK_RECORDS = {
-  'cl.receipt.signer': 'runtime.commandlayer.eth',
-  'cl.sig.kid': 'vC4WbcNoq2znSCiQ',
-  'cl.sig.pub': 'ed25519:trSRcjBVbLt+dz8LMuIwMooTwCyeW8UddfGXu/cVbLc=',
-  'cl.sig.canonical': 'json.sorted_keys.v1'
-};
+// ENS resolution for CommandLayer receipt verification.
+// IMPORTANT: there are no hardcoded fallback keys. If ENS resolution fails
+// (no resolver, no live RPC, or missing TXT records), verification must fail.
+// Do not add fallback keys — they bypass live key rotation and create exploit surface.
 
 async function defaultEnsTextResolver() {
   return null;
@@ -36,15 +33,6 @@ export async function resolveSignerFromEns(signerEnsName, options = {}) {
       records,
       ensResolved: true,
       keySource: 'live ENS text record'
-    };
-  }
-
-  if (signerEnsName === FALLBACK_SIGNER) {
-    return {
-      signer: signerEnsName,
-      records: { ...FALLBACK_RECORDS },
-      ensResolved: true,
-      keySource: 'local demo fallback for runtime.commandlayer.eth only'
     };
   }
 

@@ -46,14 +46,38 @@ export async function importPkcs8PrivateKeyFromPem(privateKeyPem) {
   return crypto.subtle.importKey('pkcs8', pkcs8, { name: 'Ed25519' }, false, ['sign']);
 }
 
+// Legacy signing: Ed25519 over UTF-8 encoded sha256 hex string.
+// Used by receipts that carry metadata.proof.hash_sha256.
 export async function signHashHex(hashHex, privateKey) {
   const payload = new TextEncoder().encode(hashHex);
   const sig = await crypto.subtle.sign({ name: 'Ed25519' }, privateKey, payload);
   return toBase64(new Uint8Array(sig));
 }
 
+// Legacy verification: Ed25519(UTF8(sha256_hex(canonical))).
+// Used when receipt has metadata.proof.hash_sha256.
 export async function verifyHashHexSignature(hashHex, signatureBase64, publicKey) {
   const payload = new TextEncoder().encode(hashHex);
+  let signature;
+  try {
+    signature = fromBase64(signatureBase64);
+  } catch {
+    return false;
+  }
+  return crypto.subtle.verify({ name: 'Ed25519' }, publicKey, signature, payload);
+}
+
+// v1.1.0 signing: Ed25519(UTF8(canonical_json)) — signs over raw canonical bytes.
+// Used by receipts that do NOT carry hash_sha256 (agent-sdk v1.1.0 format).
+export async function signCanonical(canonical, privateKey) {
+  const payload = new TextEncoder().encode(canonical);
+  const sig = await crypto.subtle.sign({ name: 'Ed25519' }, privateKey, payload);
+  return toBase64(new Uint8Array(sig));
+}
+
+// v1.1.0 verification: Ed25519(UTF8(canonical_json)).
+export async function verifyCanonicalSignature(canonical, signatureBase64, publicKey) {
+  const payload = new TextEncoder().encode(canonical);
   let signature;
   try {
     signature = fromBase64(signatureBase64);
