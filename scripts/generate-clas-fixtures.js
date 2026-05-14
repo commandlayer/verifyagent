@@ -11,9 +11,20 @@ const examplesDir = path.join(repoRoot, 'examples');
 
 const signer = 'runtime.commandlayer.eth';
 const kid = 'vC4WbcNoq2znSCiQ';
-const privatePem = `-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEICwCOgkg9CJs1VC8V718RCXRff/++wAxOdGINZ9mz2Db\n-----END PRIVATE KEY-----`;
 
-async function signReceipt(receipt) {
+function getPrivatePem() {
+  const pem = process.env.CL_PRIVATE_KEY_PEM;
+  if (!pem) {
+    throw new Error(
+      'Missing CL_PRIVATE_KEY_PEM environment variable. ' +
+      'Export a PKCS8 Ed25519 private key before running this script. ' +
+      'The key must correspond to the public key registered in the fixture ENS records.'
+    );
+  }
+  return pem;
+}
+
+async function signReceipt(receipt, privatePem) {
   const canonical = canonicalize(canonicalReceiptPayload(receipt));
   const hash = await sha256Hex(canonical);
   const privateKey = await importPkcs8PrivateKeyFromPem(privatePem);
@@ -26,6 +37,8 @@ async function signReceipt(receipt) {
 }
 
 async function main() {
+  const privatePem = getPrivatePem();
+
   const base = {
     signer,
     ts: '2026-04-29T01:32:57.167Z',
@@ -34,11 +47,14 @@ async function main() {
     execution: { runtime: 'wrapped-agent-demo', run_id: 'run_1777426377167' }
   };
 
-  const sample = await signReceipt({ ...base, verb: 'agent.execute' });
+  const sample = await signReceipt({ ...base, verb: 'agent.execute' }, privatePem);
   const sampleTampered = structuredClone(sample);
   sampleTampered.output.summary = 'hello world (tampered)';
 
-  const clasValid = await signReceipt({ ...base, family: 'trust-verification', version: '1.0.0', verb: 'verify' });
+  const clasValid = await signReceipt(
+    { ...base, family: 'trust-verification', version: '1.0.0', verb: 'verify' },
+    privatePem
+  );
   const clasTampered = structuredClone(clasValid);
   clasTampered.output.summary = 'hello world (tampered)';
 
@@ -49,6 +65,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(err);
+  process.stderr.write(`${err.message}\n`);
   process.exit(1);
 });
