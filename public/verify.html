@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
     <title>VerifyAgent</title>
     <style>
       body { font-family: Arial, sans-serif; max-width: 920px; margin: 2rem auto; padding: 0 1rem; color: #111; }
@@ -15,13 +16,14 @@
       .status { font-weight: 700; font-size: 1.15rem; }
       .verified { color: #0a7d2e; }
       .invalid { color: #b10e0e; }
+      .error-msg { color: #b10e0e; font-size: 0.9rem; margin-top: 0.5rem; }
       ul { margin-top: 0.4rem; }
       a { color: #0a58ca; }
     </style>
   </head>
   <body>
     <h1>VerifyAgent</h1>
-    <p class="tagline">Agent → Receipt → VerifyAgent → Proof.</p>
+    <p class="tagline">Agent &rarr; Receipt &rarr; VerifyAgent &rarr; Proof.</p>
 
     <textarea id="receiptInput" placeholder="Paste receipt JSON here..."></textarea>
 
@@ -32,15 +34,17 @@
       <button id="clearBtn">Clear</button>
     </div>
 
+    <div id="errorMsg" class="error-msg" role="alert" aria-live="assertive"></div>
+
     <div class="card">
-      <div>Result: <span id="status" class="status">—</span></div>
+      <div>Result: <span id="status" class="status">&mdash;</span></div>
       <ul>
-        <li>Signer ENS: <strong id="signerEns">—</strong></li>
-        <li>Key ID: <strong id="keyId">—</strong></li>
-        <li>Public key source: <strong id="publicKeySource">—</strong></li>
-        <li>Canonicalization: <strong id="canonicalization">—</strong></li>
-        <li>Hash matched: <strong id="hashMatched">—</strong></li>
-        <li>Signature valid: <strong id="signatureValid">—</strong></li>
+        <li>Signer ENS: <strong id="signerEns">&mdash;</strong></li>
+        <li>Key ID: <strong id="keyId">&mdash;</strong></li>
+        <li>Public key source: <strong id="publicKeySource">&mdash;</strong></li>
+        <li>Canonicalization: <strong id="canonicalization">&mdash;</strong></li>
+        <li>Hash matched: <strong id="hashMatched">&mdash;</strong></li>
+        <li>Signature valid: <strong id="signatureValid">&mdash;</strong></li>
       </ul>
     </div>
 
@@ -64,10 +68,20 @@
       const canonicalizationEl = document.getElementById('canonicalization');
       const hashMatchedEl = document.getElementById('hashMatched');
       const signatureValidEl = document.getElementById('signatureValid');
+      const errorMsgEl = document.getElementById('errorMsg');
 
       const yn = (v) => (v ? 'YES' : 'NO');
 
+      function clearError() {
+        errorMsgEl.textContent = '';
+      }
+
+      function showError(msg) {
+        errorMsgEl.textContent = msg;
+      }
+
       function render(result) {
+        clearError();
         statusEl.textContent = result.status;
         statusEl.className = `status ${result.status === 'VERIFIED' ? 'verified' : 'invalid'}`;
         signerEnsEl.textContent = result.signerEns || 'unknown';
@@ -78,18 +92,59 @@
         signatureValidEl.textContent = yn(result.checks?.signature_valid);
       }
 
-      async function loadJson(path) {
-        const res = await fetch(path);
-        receiptInput.value = JSON.stringify(await res.json(), null, 2);
+      async function loadJson(filePath) {
+        clearError();
+        let res;
+        try {
+          res = await fetch(filePath);
+        } catch (err) {
+          showError(`Network error loading ${filePath}: ${err.message}`);
+          return;
+        }
+        if (!res.ok) {
+          showError(`Failed to load ${filePath}: HTTP ${res.status} ${res.statusText}`);
+          return;
+        }
+        let data;
+        try {
+          data = await res.json();
+        } catch (err) {
+          showError(`Failed to parse JSON from ${filePath}: ${err.message}`);
+          return;
+        }
+        receiptInput.value = JSON.stringify(data, null, 2);
       }
 
       document.getElementById('loadSample').addEventListener('click', () => loadJson('/examples/sample-receipt.json'));
       document.getElementById('loadTampered').addEventListener('click', () => loadJson('/examples/tampered-receipt.json'));
       document.getElementById('clearBtn').addEventListener('click', () => {
+        clearError();
         receiptInput.value = '';
-        render({ status: '—', checks: {} });
+        statusEl.textContent = '—';
+        statusEl.className = 'status';
+        signerEnsEl.textContent = '—';
+        keyIdEl.textContent = '—';
+        publicKeySourceEl.textContent = '—';
+        canonicalizationEl.textContent = '—';
+        hashMatchedEl.textContent = '—';
+        signatureValidEl.textContent = '—';
       });
-      document.getElementById('verifyBtn').addEventListener('click', async () => render(await verifyReceipt(receiptInput.value)));
+      document.getElementById('verifyBtn').addEventListener('click', async () => {
+        clearError();
+        const input = receiptInput.value.trim();
+        if (!input) {
+          showError('No receipt input. Paste a receipt JSON or load a sample first.');
+          return;
+        }
+        let result;
+        try {
+          result = await verifyReceipt(input);
+        } catch (err) {
+          showError(`Verification error: ${err.message}`);
+          return;
+        }
+        render(result);
+      });
     </script>
   </body>
 </html>

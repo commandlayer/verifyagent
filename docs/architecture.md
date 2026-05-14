@@ -32,8 +32,8 @@ This repository contains verification UX and core verification logic. It does no
 
 VerifyAgent detects two receipt shapes:
 
-- **`legacy`**: base receipt shape. Valid when `hash_matched && signature_valid`.
-- **`clas_v1`** (CLAS Trust Verification v1): extends legacy with `version`, `family`, and a `trust_verb`. Valid when `schema_valid && hash_matched && signature_valid`.
+- **`legacy`**: base receipt shape. Valid when `hash_matched && signature_valid && signer_matched`.
+- **`clas_v1`** (CLAS Trust Verification v1): extends legacy with `version`, `family`, and a `trust_verb`. Valid when `schema_valid && hash_matched && signature_valid && signer_matched`.
 
 Mode is detected from indicators in `receipt.version`, `receipt.family`, `receipt.metadata.family`, `receipt.metadata.version`, and `receipt.metadata.proof.trust_verb` / `trustVerb` / `trust`.
 
@@ -64,7 +64,7 @@ VerifyAgent resolves four TXT records per signer:
 - `cl.sig.canonical` — expected canonicalization scheme
 - `cl.receipt.signer` — authoritative signer ENS name
 
-If live ENS resolution fails and the signer is `runtime.commandlayer.eth`, a local fallback mirrors the known ENS records for that name only. Any other signer that fails live resolution returns `not resolved`.
+ENS resolution is required. If live ENS resolution fails for any signer — due to no resolver, no live RPC, or missing TXT records — verification returns `INVALID` immediately with `signer_resolved: false`. There is no fallback key store. Any receipt whose signer cannot be resolved via live ENS cannot be verified.
 
 ## Verification response
 
