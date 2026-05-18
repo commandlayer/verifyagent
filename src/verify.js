@@ -5,6 +5,8 @@ import { detectReceiptMode, normalizeTrustVerb, validateClasTrustV1Shape, valida
 import * as runtimeCore from '@commandlayer/runtime-core';
 import { canonicalReceiptPayload } from './receipt-payload.js';
 
+const ED25519_SPKI_PREFIX_HEX = '302a300506032b6570032100';
+
 function extractProofFields(receipt) {
   const proof = receipt?.metadata?.proof || {};
   return {
@@ -32,6 +34,13 @@ function mapRuntimeCoreError(error) {
   return error instanceof Error ? error.message : String(error || 'runtime-core verification failed');
 }
 
+function ensurePemFromEnsPub(ensPubValue) {
+  const rawPublicKey = runtimeCore.parsePublicKey(ensPubValue);
+  const der = Buffer.concat([Buffer.from(ED25519_SPKI_PREFIX_HEX, 'hex'), Buffer.from(rawPublicKey)]);
+  const body = der.toString('base64').replace(/(.{64})/g, '$1\n');
+  return `-----BEGIN PUBLIC KEY-----\n${body}\n-----END PUBLIC KEY-----`;
+}
+
 export async function verifyReceipt(receiptInput, options = {}) {
   let receipt;
   try { receipt = typeof receiptInput === 'string' ? JSON.parse(receiptInput) : receiptInput; } catch { return invalidResult(); }
@@ -43,8 +52,9 @@ export async function verifyReceipt(receiptInput, options = {}) {
 
   let runtime;
   try {
-    runtime = verifyCommandLayerReceipt(receipt, {
-      publicKeyPemOrDer: ens.publicKeyPem || ens.pubkeyPem || ens.publicKey || ens.records?.['cl.sig.pub'] || '',
+    const publicKeyPem = ensurePemFromEnsPub(ens.records?.['cl.sig.pub']);
+    runtime = runtimeCore.verifyCommandLayerReceipt(receipt, {
+      publicKeyPemOrDer: publicKeyPem,
       ensRecord: {
         signer: ens.records['cl.receipt.signer'] || ens.signer,
         kid: ens.records['cl.sig.kid'],
@@ -52,10 +62,16 @@ export async function verifyReceipt(receiptInput, options = {}) {
       }
     });
   } catch (error) {
+    const ensSigner = ens.records['cl.receipt.signer'] || ens.signer || null;
     runtime = {
       ok: false,
       status: 'INVALID',
-      checks: { schema: false, canonical_hash: false, signature: false, signer: false },
+      checks: {
+        schema: false,
+        canonical_hash: false,
+        signature: false,
+        signer: Boolean(ensSigner) && receipt?.signer === ensSigner
+      },
       errors: [mapRuntimeCoreError(error)]
     };
   }
