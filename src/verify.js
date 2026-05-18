@@ -28,39 +28,8 @@ function invalidResult(overrides = {}) {
   };
 }
 
-function buildRuntimeOptions(ens) {
-  const requiredSigner = ens.records['cl.receipt.signer'] || ens.signer;
-  const kid = ens.records['cl.sig.kid'];
-  const pubRecord = ens.records['cl.sig.pub'] || '';
-
-  if (typeof runtimeCore.resolvePublicKeyFromENS === 'function') {
-    const resolved = runtimeCore.resolvePublicKeyFromENS({
-      'cl.sig.pub': pubRecord,
-      'cl.sig.kid': kid,
-      'cl.receipt.signer': requiredSigner
-    });
-
-    return {
-      requiredSigner,
-      kid,
-      publicKeyPemOrDer: resolved?.publicKeyPemOrDer ?? resolved?.publicKey ?? resolved?.key,
-      parsedPublicKey: resolved?.parsedPublicKey
-    };
-  }
-
-  if (typeof runtimeCore.parsePublicKey === 'function') {
-    return {
-      requiredSigner,
-      kid,
-      publicKeyPemOrDer: runtimeCore.parsePublicKey(pubRecord),
-    };
-  }
-
-  return {
-    requiredSigner,
-    kid,
-    pubkeyBase64: pubRecord.replace(/^ed25519:/i, '')
-  };
+function mapRuntimeCoreError(error) {
+  return error instanceof Error ? error.message : String(error || 'runtime-core verification failed');
 }
 
 export async function verifyReceipt(receiptInput, options = {}) {
@@ -74,16 +43,21 @@ export async function verifyReceipt(receiptInput, options = {}) {
 
   let runtime;
   try {
-    runtime = await runtimeCore.verifyCommandLayerReceipt(receipt, buildRuntimeOptions(ens));
-  } catch (error) {
-    return invalidResult({
-      signerEns: ens.records['cl.receipt.signer'] || receipt?.signer || 'unknown',
-      keyId: ens.records['cl.sig.kid'] || null,
-      publicKeySource: ens.keySource,
-      canonicalization: extractProofFields(receipt).canonical,
-      checks: { schema: schemaValid, canonical_hash: false, signature: false, signer: false },
-      error: error instanceof Error ? error.message : 'runtime-core verification failed'
+    runtime = verifyCommandLayerReceipt(receipt, {
+      publicKeyPemOrDer: ens.publicKeyPem || ens.pubkeyPem || ens.publicKey || ens.records?.['cl.sig.pub'] || '',
+      ensRecord: {
+        signer: ens.records['cl.receipt.signer'] || ens.signer,
+        kid: ens.records['cl.sig.kid'],
+        canonical: ens.records['cl.sig.canonical'] || 'json.sorted_keys.v1'
+      }
     });
+  } catch (error) {
+    runtime = {
+      ok: false,
+      status: 'INVALID',
+      checks: { schema: false, canonical_hash: false, signature: false, signer: false },
+      errors: [mapRuntimeCoreError(error)]
+    };
   }
 
   const trustVerb = normalizeTrustVerb(receipt?.verb ?? receipt?.metadata?.proof?.trust_verb ?? receipt?.metadata?.proof?.trustVerb);
@@ -96,7 +70,7 @@ export async function verifyReceipt(receiptInput, options = {}) {
     publicKeySource: ens.keySource,
     canonicalization: extractProofFields(receipt).canonical,
     checks: { schema: schemaValid, canonical_hash: runtime.checks.canonical_hash, signature: runtime.checks.signature, signer: runtime.checks.signer, trust_verb_identified: trustVerb !== null, trust_verb: trustVerb },
-    debug: { recomputed_hash_sha256: runtime.debug?.recomputedHash }
+    errors: runtime.errors || []
   };
 }
 
