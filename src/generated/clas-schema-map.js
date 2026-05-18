@@ -58,16 +58,52 @@ export const clasSchemaMap = {
               "type": "object",
               "required": [
                 "canonicalization",
-                "hash_sha256"
+                "hash",
+                "signature"
               ],
               "properties": {
                 "canonicalization": {
                   "type": "string",
                   "minLength": 1
                 },
-                "hash_sha256": {
-                  "type": "string",
-                  "pattern": "^[a-f0-9]{64}$"
+                "hash": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "SHA-256"
+                    },
+                    "value": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "signature": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value",
+                    "kid"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "Ed25519"
+                    },
+                    "value": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kid": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
                 }
               },
               "additionalProperties": true
@@ -147,16 +183,52 @@ export const clasSchemaMap = {
               "type": "object",
               "required": [
                 "canonicalization",
-                "hash_sha256"
+                "hash",
+                "signature"
               ],
               "properties": {
                 "canonicalization": {
                   "type": "string",
                   "minLength": 1
                 },
-                "hash_sha256": {
-                  "type": "string",
-                  "pattern": "^[a-f0-9]{64}$"
+                "hash": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "SHA-256"
+                    },
+                    "value": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "signature": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value",
+                    "kid"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "Ed25519"
+                    },
+                    "value": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kid": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
                 }
               },
               "additionalProperties": true
@@ -236,16 +308,52 @@ export const clasSchemaMap = {
               "type": "object",
               "required": [
                 "canonicalization",
-                "hash_sha256"
+                "hash",
+                "signature"
               ],
               "properties": {
                 "canonicalization": {
                   "type": "string",
                   "minLength": 1
                 },
-                "hash_sha256": {
-                  "type": "string",
-                  "pattern": "^[a-f0-9]{64}$"
+                "hash": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "SHA-256"
+                    },
+                    "value": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "signature": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value",
+                    "kid"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "Ed25519"
+                    },
+                    "value": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kid": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
                 }
               },
               "additionalProperties": true
@@ -325,16 +433,52 @@ export const clasSchemaMap = {
               "type": "object",
               "required": [
                 "canonicalization",
-                "hash_sha256"
+                "hash",
+                "signature"
               ],
               "properties": {
                 "canonicalization": {
                   "type": "string",
                   "minLength": 1
                 },
-                "hash_sha256": {
-                  "type": "string",
-                  "pattern": "^[a-f0-9]{64}$"
+                "hash": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "SHA-256"
+                    },
+                    "value": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "signature": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value",
+                    "kid"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "Ed25519"
+                    },
+                    "value": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kid": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
                 }
               },
               "additionalProperties": true
@@ -414,16 +558,52 @@ export const clasSchemaMap = {
               "type": "object",
               "required": [
                 "canonicalization",
-                "hash_sha256"
+                "hash",
+                "signature"
               ],
               "properties": {
                 "canonicalization": {
                   "type": "string",
                   "minLength": 1
                 },
-                "hash_sha256": {
-                  "type": "string",
-                  "pattern": "^[a-f0-9]{64}$"
+                "hash": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "SHA-256"
+                    },
+                    "value": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "signature": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value",
+                    "kid"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "Ed25519"
+                    },
+                    "value": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kid": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
                 }
               },
               "additionalProperties": true
@@ -503,16 +683,52 @@ export const clasSchemaMap = {
               "type": "object",
               "required": [
                 "canonicalization",
-                "hash_sha256"
+                "hash",
+                "signature"
               ],
               "properties": {
                 "canonicalization": {
                   "type": "string",
                   "minLength": 1
                 },
-                "hash_sha256": {
-                  "type": "string",
-                  "pattern": "^[a-f0-9]{64}$"
+                "hash": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "SHA-256"
+                    },
+                    "value": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "signature": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value",
+                    "kid"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "Ed25519"
+                    },
+                    "value": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kid": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
                 }
               },
               "additionalProperties": true
@@ -592,16 +808,52 @@ export const clasSchemaMap = {
               "type": "object",
               "required": [
                 "canonicalization",
-                "hash_sha256"
+                "hash",
+                "signature"
               ],
               "properties": {
                 "canonicalization": {
                   "type": "string",
                   "minLength": 1
                 },
-                "hash_sha256": {
-                  "type": "string",
-                  "pattern": "^[a-f0-9]{64}$"
+                "hash": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "SHA-256"
+                    },
+                    "value": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "signature": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value",
+                    "kid"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "Ed25519"
+                    },
+                    "value": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kid": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
                 }
               },
               "additionalProperties": true
@@ -681,16 +933,52 @@ export const clasSchemaMap = {
               "type": "object",
               "required": [
                 "canonicalization",
-                "hash_sha256"
+                "hash",
+                "signature"
               ],
               "properties": {
                 "canonicalization": {
                   "type": "string",
                   "minLength": 1
                 },
-                "hash_sha256": {
-                  "type": "string",
-                  "pattern": "^[a-f0-9]{64}$"
+                "hash": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "SHA-256"
+                    },
+                    "value": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "signature": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value",
+                    "kid"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "Ed25519"
+                    },
+                    "value": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kid": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
                 }
               },
               "additionalProperties": true
@@ -770,16 +1058,52 @@ export const clasSchemaMap = {
               "type": "object",
               "required": [
                 "canonicalization",
-                "hash_sha256"
+                "hash",
+                "signature"
               ],
               "properties": {
                 "canonicalization": {
                   "type": "string",
                   "minLength": 1
                 },
-                "hash_sha256": {
-                  "type": "string",
-                  "pattern": "^[a-f0-9]{64}$"
+                "hash": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "SHA-256"
+                    },
+                    "value": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "signature": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value",
+                    "kid"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "Ed25519"
+                    },
+                    "value": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kid": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
                 }
               },
               "additionalProperties": true
@@ -859,16 +1183,52 @@ export const clasSchemaMap = {
               "type": "object",
               "required": [
                 "canonicalization",
-                "hash_sha256"
+                "hash",
+                "signature"
               ],
               "properties": {
                 "canonicalization": {
                   "type": "string",
                   "minLength": 1
                 },
-                "hash_sha256": {
-                  "type": "string",
-                  "pattern": "^[a-f0-9]{64}$"
+                "hash": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "SHA-256"
+                    },
+                    "value": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "signature": {
+                  "type": "object",
+                  "required": [
+                    "alg",
+                    "value",
+                    "kid"
+                  ],
+                  "properties": {
+                    "alg": {
+                      "const": "Ed25519"
+                    },
+                    "value": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kid": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
                 }
               },
               "additionalProperties": true
