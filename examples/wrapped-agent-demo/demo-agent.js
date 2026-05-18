@@ -19,7 +19,6 @@ function runSimpleAgent() {
 export async function createSignedReceipt({
   signer = readEnv('CL_RECEIPT_SIGNER', 'runtime.commandlayer.eth'),
   kid = readEnv('CL_KEY_ID', 'vC4WbcNoq2znSCiQ'),
-  canonicalId = readEnv('CL_CANONICAL_ID', 'json.sorted_keys.v1'),
   privatePem = readEnv('CL_PRIVATE_KEY_PEM'),
   now = new Date()
 } = {}) {
@@ -37,9 +36,8 @@ export async function createSignedReceipt({
   };
 
   return runtimeCore.signCommandLayerReceipt(receipt, {
-    privateKeyPemOrDer: privatePem,
-    kid,
-    canonical: canonicalId
+    privateKeyPem: privatePem,
+    kid
   });
 }
 
