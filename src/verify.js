@@ -2,11 +2,9 @@ import { canonicalize } from './canonicalize.js';
 import { resolveSignerFromEns } from './ens.js';
 import { sha256Hex } from './crypto.js';
 import { detectReceiptMode, normalizeTrustVerb, validateClasTrustV1Shape, validateLegacyReceiptShape } from './schema.js';
-import { verifyCommandLayerReceipt } from '@commandlayer/runtime-core';
+import * as runtimeCore from '@commandlayer/runtime-core';
 import { canonicalReceiptPayload } from './receipt-payload.js';
 
-// Extract proof fields from any supported receipt format.
-// Priority order: metadata.proof (runtime), top-level proof (agent-sdk), legacy receipt.signature.
 function extractProofFields(receipt) {
   const proof = receipt?.metadata?.proof || {};
   return {
@@ -30,6 +28,41 @@ function invalidResult(overrides = {}) {
   };
 }
 
+function buildRuntimeOptions(ens) {
+  const requiredSigner = ens.records['cl.receipt.signer'] || ens.signer;
+  const kid = ens.records['cl.sig.kid'];
+  const pubRecord = ens.records['cl.sig.pub'] || '';
+
+  if (typeof runtimeCore.resolvePublicKeyFromENS === 'function') {
+    const resolved = runtimeCore.resolvePublicKeyFromENS({
+      'cl.sig.pub': pubRecord,
+      'cl.sig.kid': kid,
+      'cl.receipt.signer': requiredSigner
+    });
+
+    return {
+      requiredSigner,
+      kid,
+      publicKeyPemOrDer: resolved?.publicKeyPemOrDer ?? resolved?.publicKey ?? resolved?.key,
+      parsedPublicKey: resolved?.parsedPublicKey
+    };
+  }
+
+  if (typeof runtimeCore.parsePublicKey === 'function') {
+    return {
+      requiredSigner,
+      kid,
+      publicKeyPemOrDer: runtimeCore.parsePublicKey(pubRecord),
+    };
+  }
+
+  return {
+    requiredSigner,
+    kid,
+    pubkeyBase64: pubRecord.replace(/^ed25519:/i, '')
+  };
+}
+
 export async function verifyReceipt(receiptInput, options = {}) {
   let receipt;
   try { receipt = typeof receiptInput === 'string' ? JSON.parse(receiptInput) : receiptInput; } catch { return invalidResult(); }
@@ -39,11 +72,19 @@ export async function verifyReceipt(receiptInput, options = {}) {
   const ens = await resolveSignerFromEns(receipt?.signer, options.ens || {});
   if (!ens.ensResolved) return invalidResult({ checks: { schema: schemaValid, canonical_hash: false, signature: false, signer: false }, error: 'ENS resolution failed — cannot verify without public key' });
 
-  const runtime = await verifyCommandLayerReceipt(receipt, {
-    requiredSigner: ens.records['cl.receipt.signer'] || ens.signer,
-    kid: ens.records['cl.sig.kid'],
-    pubkeyBase64: (ens.records['cl.sig.pub'] || '').replace(/^ed25519:/i, '')
-  });
+  let runtime;
+  try {
+    runtime = await runtimeCore.verifyCommandLayerReceipt(receipt, buildRuntimeOptions(ens));
+  } catch (error) {
+    return invalidResult({
+      signerEns: ens.records['cl.receipt.signer'] || receipt?.signer || 'unknown',
+      keyId: ens.records['cl.sig.kid'] || null,
+      publicKeySource: ens.keySource,
+      canonicalization: extractProofFields(receipt).canonical,
+      checks: { schema: schemaValid, canonical_hash: false, signature: false, signer: false },
+      error: error instanceof Error ? error.message : 'runtime-core verification failed'
+    });
+  }
 
   const trustVerb = normalizeTrustVerb(receipt?.verb ?? receipt?.metadata?.proof?.trust_verb ?? receipt?.metadata?.proof?.trustVerb);
   const valid = schemaValid && runtime.checks.canonical_hash && runtime.checks.signature && runtime.checks.signer;
@@ -55,7 +96,7 @@ export async function verifyReceipt(receiptInput, options = {}) {
     publicKeySource: ens.keySource,
     canonicalization: extractProofFields(receipt).canonical,
     checks: { schema: schemaValid, canonical_hash: runtime.checks.canonical_hash, signature: runtime.checks.signature, signer: runtime.checks.signer, trust_verb_identified: trustVerb !== null, trust_verb: trustVerb },
-    debug: { recomputed_hash_sha256: runtime.debug.recomputedHash }
+    debug: { recomputed_hash_sha256: runtime.debug?.recomputedHash }
   };
 }
 
