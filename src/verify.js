@@ -30,6 +30,10 @@ function invalidResult(overrides = {}) {
   };
 }
 
+function mapRuntimeCoreError(error) {
+  return error instanceof Error ? error.message : String(error || 'runtime-core verification failed');
+}
+
 export async function verifyReceipt(receiptInput, options = {}) {
   let receipt;
   try { receipt = typeof receiptInput === 'string' ? JSON.parse(receiptInput) : receiptInput; } catch { return invalidResult(); }
@@ -39,11 +43,24 @@ export async function verifyReceipt(receiptInput, options = {}) {
   const ens = await resolveSignerFromEns(receipt?.signer, options.ens || {});
   if (!ens.ensResolved) return invalidResult({ checks: { schema: schemaValid, canonical_hash: false, signature: false, signer: false }, error: 'ENS resolution failed — cannot verify without public key' });
 
-  const runtime = await verifyCommandLayerReceipt(receipt, {
-    requiredSigner: ens.records['cl.receipt.signer'] || ens.signer,
-    kid: ens.records['cl.sig.kid'],
-    pubkeyBase64: (ens.records['cl.sig.pub'] || '').replace(/^ed25519:/i, '')
-  });
+  let runtime;
+  try {
+    runtime = verifyCommandLayerReceipt(receipt, {
+      publicKeyPemOrDer: ens.publicKeyPem || ens.pubkeyPem || ens.publicKey || ens.records?.['cl.sig.pub'] || '',
+      ensRecord: {
+        signer: ens.records['cl.receipt.signer'] || ens.signer,
+        kid: ens.records['cl.sig.kid'],
+        canonical: ens.records['cl.sig.canonical'] || 'json.sorted_keys.v1'
+      }
+    });
+  } catch (error) {
+    runtime = {
+      ok: false,
+      status: 'INVALID',
+      checks: { schema: false, canonical_hash: false, signature: false, signer: false },
+      errors: [mapRuntimeCoreError(error)]
+    };
+  }
 
   const trustVerb = normalizeTrustVerb(receipt?.verb ?? receipt?.metadata?.proof?.trust_verb ?? receipt?.metadata?.proof?.trustVerb);
   const valid = schemaValid && runtime.checks.canonical_hash && runtime.checks.signature && runtime.checks.signer;
@@ -55,7 +72,7 @@ export async function verifyReceipt(receiptInput, options = {}) {
     publicKeySource: ens.keySource,
     canonicalization: extractProofFields(receipt).canonical,
     checks: { schema: schemaValid, canonical_hash: runtime.checks.canonical_hash, signature: runtime.checks.signature, signer: runtime.checks.signer, trust_verb_identified: trustVerb !== null, trust_verb: trustVerb },
-    debug: { recomputed_hash_sha256: runtime.debug.recomputedHash }
+    errors: runtime.errors || []
   };
 }
 
