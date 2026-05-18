@@ -14,6 +14,6 @@
   "dependencies": {
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
-    "@commandlayer/runtime-core": "https://codeload.github.com/commandlayer/runtime-core/tar.gz/8fcebeff72898ac1e3482f2d608b14769675f5e8"
+    "@commandlayer/runtime-core": "^1.2.0"
   }
 }
