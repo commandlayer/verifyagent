@@ -3,9 +3,11 @@ import { clasSchemaMap, TRUST_VERBS } from './generated/clas-schema-map.js';
 
 const TRUST_VERB_SET = new Set(TRUST_VERBS);
 
-const ajv = new Ajv({ allErrors: true, strict: false });
 const clasValidators = Object.fromEntries(
-  Object.entries(clasSchemaMap).map(([verb, entry]) => [verb, ajv.compile(entry.receipt)])
+  Object.entries(clasSchemaMap).map(([verb, entry]) => {
+    const ajv = new Ajv({ allErrors: true, strict: false });
+    return [verb, ajv.compile(entry.receipt)];
+  })
 );
 
 function isObject(v) {
