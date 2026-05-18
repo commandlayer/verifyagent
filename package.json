@@ -13,6 +13,7 @@
   "type": "module",
   "dependencies": {
     "ajv": "^8.17.1",
-    "ajv-formats": "^3.0.1"
+    "ajv-formats": "^3.0.1",
+    "@commandlayer/runtime-core": "github:commandlayer/runtime-core#8fcebeff72898ac1e3482f2d608b14769675f5e8"
   }
 }
