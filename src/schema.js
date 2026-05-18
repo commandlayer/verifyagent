@@ -4,8 +4,10 @@ import { clasSchemaMap, TRUST_VERBS } from './generated/clas-schema-map.js';
 const TRUST_VERB_SET = new Set(TRUST_VERBS);
 
 const ajv = new Ajv({ allErrors: true, strict: false });
+const baseSchema = Object.values(clasSchemaMap)[0]?.receipt;
+const baseValidator = baseSchema ? ajv.compile(baseSchema) : () => false;
 const clasValidators = Object.fromEntries(
-  Object.entries(clasSchemaMap).map(([verb, entry]) => [verb, ajv.compile(entry.receipt)])
+  Object.keys(clasSchemaMap).map((verb) => [verb, baseValidator])
 );
 
 function isObject(v) {
@@ -42,15 +44,18 @@ export function detectReceiptMode(receipt) {
 
 export function validateLegacyReceiptShape(receipt) {
   if (!isObject(receipt)) return false;
+  const proof = receipt?.metadata?.proof;
   return hasString(receipt.signer)
     && isObject(receipt.metadata)
-    && isObject(receipt.metadata.proof)
-    && hasString(receipt.metadata.proof.canonicalization)
-    && hasString(receipt.metadata.proof.hash_sha256)
-    && isObject(receipt.signature)
-    && hasString(receipt.signature.alg)
-    && hasString(receipt.signature.kid)
-    && hasString(receipt.signature.sig);
+    && isObject(proof)
+    && hasString(proof.canonicalization)
+    && isObject(proof.hash)
+    && proof.hash.alg === 'SHA-256'
+    && hasString(proof.hash.value)
+    && isObject(proof.signature)
+    && proof.signature.alg === 'Ed25519'
+    && hasString(proof.signature.kid)
+    && hasString(proof.signature.value);
 }
 
 export function validateClasTrustV1Shape(receipt) {

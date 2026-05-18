@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { canonicalize } from '../../src/canonicalize.js';
 import { importPkcs8PrivateKeyFromPem, sha256Hex, signHashHex } from '../../src/crypto.js';
-import { canonicalReceiptPayload } from '../../src/verify.js';
+import { canonicalReceiptPayload } from '../../src/receipt-payload.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -45,8 +45,7 @@ export async function createSignedReceipt({
 
   return {
     ...receipt,
-    metadata: { proof: { canonicalization: canonicalId, hash_sha256: hash } },
-    signature: { alg: 'ed25519', kid, sig }
+    metadata: { proof: { canonicalization: canonicalId, hash: { alg: 'SHA-256', value: hash }, signature: { alg: 'Ed25519', kid, value: sig } } }
   };
 }
 

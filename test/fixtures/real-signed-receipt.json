@@ -31,5 +31,18 @@
       "kid": "test-kid-1",
       "sig": "sfTRREb8HV7zhIKbcfUyivNlXGXDf6pE1cumpvzH0FBBhClQ/37NXHQxTzq7AeTiZlYJGwfT8JKe7pEvGTf/Aw=="
     }
+  },
+  "metadata": {
+    "proof": {
+      "hash": {
+        "alg": "SHA-256",
+        "value": ""
+      },
+      "signature": {
+        "alg": "Ed25519",
+        "value": "",
+        "kid": ""
+      }
+    }
   }
 }

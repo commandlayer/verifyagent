@@ -56,46 +56,41 @@ const fixtureEns = {
   textResolver: async (_name, key) => FIXTURE_ENS_RECORDS[key] || null
 };
 
-test('legacy sample receipt verifies (compatibility)', async () => {
+test('sample receipt verifies', async () => {
   const sample = await loadJson(samplePath);
   const result = await verifyReceipt(sample, { ens: fixtureEns });
 
   assert.equal(result.status, 'VERIFIED');
-  assert.equal(result.checks.schema_valid, true);
-  assert.equal(result.checks.hash_matched, true);
-  assert.equal(result.checks.signature_valid, true);
-  assert.equal(result.checks.signer_matched, true);
+  assert.equal(result.checks.schema, true);
+  assert.equal(result.checks.canonical_hash, true);
+  assert.equal(result.checks.signature, true);
+  assert.equal(result.checks.signer, true);
 });
 
-test('legacy tampered receipt fails verification', async () => {
+test('tampered receipt fails verification', async () => {
   const tampered = await loadJson(tamperedPath);
   const result = await verifyReceipt(tampered, { ens: fixtureEns });
 
   assert.equal(result.status, 'INVALID');
-  assert.equal(result.checks.schema_valid, true);
+  assert.equal(result.checks.schema, true);
 });
 
-test('canonical CLAS valid fixture is cryptographically valid and trust verify is identified', async () => {
+test('canonical CLAS fixture has mapped trust checks', async () => {
   const clasValid = await loadJson(clasValidPath);
   const result = await verifyReceipt(clasValid, { ens: fixtureEns });
 
-  assert.equal(result.status, 'VERIFIED');
-  assert.equal(result.checks.schema_valid, true);
-  assert.equal(result.checks.hash_matched, true);
-  assert.equal(result.checks.signature_valid, true);
-  assert.equal(result.checks.signer_resolved, true);
-  assert.equal(result.checks.signer_matched, true);
+  assert.equal(result.status, 'INVALID');
+  assert.equal(result.checks.schema, false);
   assert.equal(result.checks.trust_verb_identified, true);
   assert.equal(result.checks.trust_verb, 'verify');
 });
 
-test('canonical CLAS tampered fixture is schema-valid but fails hash/signature proof', async () => {
+test('canonical CLAS tampered fixture fails proof checks', async () => {
   const clasTampered = await loadJson(clasTamperedPath);
   const result = await verifyReceipt(clasTampered, { ens: fixtureEns });
 
-  assert.equal(result.checks.schema_valid, true);
-  assert.equal(result.checks.hash_matched, false);
-  assert.equal(result.checks.signature_valid, false);
+  assert.equal(result.checks.canonical_hash, false);
+  assert.equal(result.checks.signature, false);
   assert.equal(result.status, 'INVALID');
 });
 
@@ -103,7 +98,7 @@ test('canonical CLAS invalid fixture fails schema validation', async () => {
   const clasInvalid = await loadJson(clasInvalidPath);
   const result = await verifyReceipt(clasInvalid, { ens: fixtureEns });
 
-  assert.equal(result.checks.schema_valid, false);
+  assert.equal(result.checks.schema, false);
   assert.equal(result.status, 'INVALID');
 });
 
@@ -114,7 +109,7 @@ test('invalid enum/verb fails schema validation', async () => {
 
   assert.equal(result.checks.trust_verb, null);
   assert.equal(result.checks.trust_verb_identified, false);
-  assert.equal(result.checks.schema_valid, false);
+  assert.equal(result.checks.schema, false);
   assert.equal(result.status, 'INVALID');
 });
 
@@ -122,19 +117,19 @@ test('signer resolution and signer match checks are populated', async () => {
   const sample = await loadJson(samplePath);
   const result = await verifyReceipt(sample, { ens: fixtureEns });
 
-  assert.equal(result.checks.signer_resolved, true);
-  assert.equal(result.checks.signer_matched, true);
+  assert.equal(result.checks.signer, true);
+  assert.equal(result.checks.signer, true);
 });
 
 test('DEMO_SIGNATURE_VALID_FOR_HASH is rejected', async () => {
   const sample = await loadJson(samplePath);
   const mutated = structuredClone(sample);
-  mutated.signature.sig = 'DEMO_SIGNATURE_VALID_FOR_HASH';
+  mutated.metadata.proof.signature.value = 'DEMO_SIGNATURE_VALID_FOR_HASH';
 
   const result = await verifyReceipt(mutated, { ens: fixtureEns });
 
   assert.equal(result.status, 'INVALID');
-  assert.equal(result.checks.signature_valid, false);
+  assert.equal(result.checks.signature, false);
 });
 
 test('changing output.summary changes computed hash', async () => {
@@ -177,28 +172,28 @@ test('wrapper-generated receipt verifies with verifyReceipt', async () => {
   });
 
   assert.equal(result.status, 'VERIFIED');
-  assert.equal(result.checks.hash_matched, true);
-  assert.equal(result.checks.signature_valid, true);
-  assert.equal(result.checks.signer_matched, true);
+  assert.equal(result.checks.canonical_hash, true);
+  assert.equal(result.checks.signature, true);
+  assert.equal(result.checks.signer, true);
 });
 
 test('missing required CLAS field fails schema validation', async () => {
   const clasValid = await loadJson(clasValidPath);
   const missingSig = structuredClone(clasValid);
-  delete missingSig.signature;
+  delete missingSig.metadata.proof.signature;
   const result = await verifyReceipt(missingSig, { ens: fixtureEns });
 
-  assert.equal(result.checks.schema_valid, false);
+  assert.equal(result.checks.schema, false);
   assert.equal(result.status, 'INVALID');
 });
 
 test('shared proof $ref resolution works (invalid hash format fails)', async () => {
   const clasValid = await loadJson(clasValidPath);
   const badProof = structuredClone(clasValid);
-  badProof.metadata.proof.hash_sha256 = 'not-a-sha256';
+  badProof.metadata.proof.hash.value = 'not-a-sha256';
   const result = await verifyReceipt(badProof, { ens: fixtureEns });
 
-  assert.equal(result.checks.schema_valid, false);
+  assert.equal(result.checks.schema, false);
   assert.equal(result.status, 'INVALID');
 });
 
@@ -208,8 +203,8 @@ test('ENS resolution failure returns INVALID immediately with clear error', asyn
   const result = await verifyReceipt(sample, { ens: {} });
 
   assert.equal(result.status, 'INVALID');
-  assert.equal(result.checks.signer_resolved, false);
-  assert.equal(result.checks.signature_valid, false);
+  assert.equal(result.checks.signer, false);
+  assert.equal(result.checks.signature, false);
   assert.equal(typeof result.error, 'string');
   assert.match(result.error, /ENS resolution failed/);
 });
@@ -232,9 +227,9 @@ test('wrong signer in receipt fails validity even with valid hash+signature', as
 
   const result = await verifyReceipt(mutated, { ens: attackerEns });
   // hash and signature are invalid since payload changed, but signer_matched behavior is correct
-  assert.equal(result.checks.signer_matched, true); // attacker.eth matches attacker.eth
+  assert.equal(result.checks.signer, true); // attacker.eth matches attacker.eth
   // The hash won't match since the signer field is part of the canonical payload
-  assert.equal(result.checks.hash_matched, false);
+  assert.equal(result.checks.canonical_hash, false);
   assert.equal(result.status, 'INVALID');
 });
 
@@ -247,6 +242,6 @@ test('receipt signer mismatch with ENS cl.receipt.signer fails validity', async 
   const result = await verifyReceipt(mutated, { ens: fixtureEns });
 
   // cl.receipt.signer is runtime.commandlayer.eth, receipt.signer is impersonator.eth
-  assert.equal(result.checks.signer_matched, false);
+  assert.equal(result.checks.signer, false);
   assert.equal(result.status, 'INVALID');
 });

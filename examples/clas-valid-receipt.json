@@ -19,12 +19,15 @@
   "metadata": {
     "proof": {
       "canonicalization": "json.sorted_keys.v1",
-      "hash_sha256": "249307a047d422d0eea8f5c5b3407aa38f4387c02bd00034218fb34df34c28a8"
+      "hash": {
+        "alg": "SHA-256",
+        "value": "249307a047d422d0eea8f5c5b3407aa38f4387c02bd00034218fb34df34c28a8"
+      },
+      "signature": {
+        "alg": "Ed25519",
+        "value": "QD0d3q2NvcGoPjeglDWOxU+aqIQyUttDzKOKPiBodNEGzxgIBWvRlPixryRetBFH3gVNfna4fvdGaVlFNWTdAA==",
+        "kid": "vC4WbcNoq2znSCiQ"
+      }
     }
-  },
-  "signature": {
-    "alg": "ed25519",
-    "kid": "vC4WbcNoq2znSCiQ",
-    "sig": "QD0d3q2NvcGoPjeglDWOxU+aqIQyUttDzKOKPiBodNEGzxgIBWvRlPixryRetBFH3gVNfna4fvdGaVlFNWTdAA=="
   }
 }
