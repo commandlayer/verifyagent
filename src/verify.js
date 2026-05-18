@@ -2,11 +2,9 @@ import { canonicalize } from './canonicalize.js';
 import { resolveSignerFromEns } from './ens.js';
 import { sha256Hex } from './crypto.js';
 import { detectReceiptMode, normalizeTrustVerb, validateClasTrustV1Shape, validateLegacyReceiptShape } from './schema.js';
-import { verifyCommandLayerReceipt } from '@commandlayer/runtime-core';
+import * as runtimeCore from '@commandlayer/runtime-core';
 import { canonicalReceiptPayload } from './receipt-payload.js';
 
-// Extract proof fields from any supported receipt format.
-// Priority order: metadata.proof (runtime), top-level proof (agent-sdk), legacy receipt.signature.
 function extractProofFields(receipt) {
   const proof = receipt?.metadata?.proof || {};
   return {
