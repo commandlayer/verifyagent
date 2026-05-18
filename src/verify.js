@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { resolveSignerFromEns } from './ens.js';
 import { detectReceiptMode, normalizeTrustVerb, validateClasTrustV1Shape, validateLegacyReceiptShape } from './schema.js';
 import * as runtimeCore from '@commandlayer/runtime-core';
@@ -88,6 +89,10 @@ export async function verifyReceipt(receiptInput, options = {}) {
 }
 
 export function computeReceiptHash(receipt) {
-  const proof = runtimeCore.buildCanonicalProof(receipt);
-  return proof.hash.value;
+  const canonical = runtimeCore.buildCanonicalProof(receipt);
+  if (typeof runtimeCore.sha256HexUtf8 === 'function') {
+    return runtimeCore.sha256HexUtf8(canonical);
+  }
+
+  return createHash('sha256').update(canonical, 'utf8').digest('hex');
 }
