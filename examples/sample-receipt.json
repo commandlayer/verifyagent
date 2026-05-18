@@ -1,5 +1,6 @@
 {
   "signer": "runtime.commandlayer.eth",
+  "verb": "agent.execute",
   "ts": "2026-04-29T01:32:57.167Z",
   "input": {
     "task": "summarize",
@@ -13,7 +14,6 @@
     "runtime": "wrapped-agent-demo",
     "run_id": "run_1777426377167"
   },
-  "verb": "agent.execute",
   "metadata": {
     "proof": {
       "canonicalization": "json.sorted_keys.v1",
@@ -23,7 +23,7 @@
       },
       "signature": {
         "alg": "Ed25519",
-        "value": "GeLeDYy3vp19ZWiP4g/rJ0jOtfo5cwRFwSy7OFC09BHqsVq2eaD1DVKVPJELSJkCcFv+dYPc2uqly4jiFgiVBw==",
+        "value": "nsVwGqHlqHwQ8d9qZGZR1L9WxemYndSmpFEwSLp0eIFq7Sj0eFI9zckXJVG6ohuXDSqqGc39od/brY8J1jxdAQ==",
         "kid": "vC4WbcNoq2znSCiQ"
       }
     }
