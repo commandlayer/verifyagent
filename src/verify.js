@@ -51,7 +51,17 @@ export async function verifyReceipt(receiptInput, options = {}) {
   let runtime;
   try {
     const publicKeyPem = ensurePemFromEnsPub(ens.records?.['cl.sig.pub']);
-    runtime = runtimeCore.verifyCommandLayerReceipt(receipt, {
+    const runtimeReceipt = { ...receipt };
+    if (!Object.prototype.hasOwnProperty.call(runtimeReceipt, 'agent')) {
+      Object.defineProperty(runtimeReceipt, 'agent', {
+        value: receipt?.signer,
+        enumerable: false,
+        configurable: true,
+        writable: false
+      });
+    }
+
+    runtime = runtimeCore.verifyCommandLayerReceipt(runtimeReceipt, {
       publicKeyPemOrDer: publicKeyPem,
       ensRecord: {
         signer: ens.records['cl.receipt.signer'] || ens.signer,
