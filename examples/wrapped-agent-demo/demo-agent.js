@@ -1,9 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { canonicalize } from '../../src/canonicalize.js';
-import { importPkcs8PrivateKeyFromPem, sha256Hex, signHashHex } from '../../src/crypto.js';
-import { canonicalReceiptPayload } from '../../src/receipt-payload.js';
+import * as runtimeCore from '@commandlayer/runtime-core';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -38,15 +36,11 @@ export async function createSignedReceipt({
     execution: { runtime: 'wrapped-agent-demo', run_id: `run_${now.getTime()}` }
   };
 
-  const canonicalPayload = canonicalize(canonicalReceiptPayload(receipt));
-  const hash = await sha256Hex(canonicalPayload);
-  const privateKey = await importPkcs8PrivateKeyFromPem(privatePem);
-  const sig = await signHashHex(hash, privateKey);
-
-  return {
-    ...receipt,
-    metadata: { proof: { canonicalization: canonicalId, hash: { alg: 'SHA-256', value: hash }, signature: { alg: 'Ed25519', kid, value: sig } } }
-  };
+  return runtimeCore.signCommandLayerReceipt(receipt, {
+    privateKeyPemOrDer: privatePem,
+    kid,
+    canonical: canonicalId
+  });
 }
 
 async function main() {
