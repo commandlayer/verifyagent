@@ -1,9 +1,6 @@
-import { canonicalize } from './canonicalize.js';
 import { resolveSignerFromEns } from './ens.js';
-import { sha256Hex } from './crypto.js';
 import { detectReceiptMode, normalizeTrustVerb, validateClasTrustV1Shape, validateLegacyReceiptShape } from './schema.js';
 import * as runtimeCore from '@commandlayer/runtime-core';
-import { canonicalReceiptPayload } from './receipt-payload.js';
 
 const ED25519_SPKI_PREFIX_HEX = '302a300506032b6570032100';
 
@@ -91,5 +88,6 @@ export async function verifyReceipt(receiptInput, options = {}) {
 }
 
 export function computeReceiptHash(receipt) {
-  return sha256Hex(canonicalize(canonicalReceiptPayload(receipt)));
+  const proof = runtimeCore.buildCanonicalProof(receipt);
+  return proof.hash.value;
 }
