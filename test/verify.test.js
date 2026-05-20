@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 import { computeReceiptHash, verifyReceipt } from '../src/verify.js';
 import { toBase64 } from '../src/crypto.js';
 import { createSignedReceipt } from '../examples/wrapped-agent-demo/demo-agent.js';
+import * as runtimeCore from '@commandlayer/runtime-core';
 
 const samplePath = new URL('../examples/sample-receipt.json', import.meta.url);
 const tamperedPath = new URL('../examples/tampered-receipt.json', import.meta.url);
@@ -243,5 +244,60 @@ test('receipt signer mismatch with ENS cl.receipt.signer fails validity', async 
 
   // cl.receipt.signer is runtime.commandlayer.eth, receipt.signer is impersonator.eth
   assert.equal(result.checks.signer, false);
+  assert.equal(result.status, 'INVALID');
+});
+
+test('runtime-produced receipt verifies', async () => {
+  const { privateKeyPem, ensPubValue } = await runtimeCore.generateEd25519KeyPair();
+  const signer = 'runtime.commandlayer.eth';
+  const kid = 'runtime-e2e-test-kid';
+
+  const receipt = await runtimeCore.signCommandLayerReceipt({
+    signer,
+    verb: 'respond',
+    ts: '2026-05-20T00:00:00.000Z',
+    input: { prompt: 'runtime verification' },
+    output: { summary: 'valid runtime receipt' },
+    execution: { duration_ms: 10, model: 'test' }
+  }, {
+    signer,
+    kid,
+    privateKeyPem,
+    canonicalization: runtimeCore.CANONICAL_METHOD,
+    metadata: { proof: { hash: { alg: 'sha-256' }, signature: { alg: runtimeCore.SIGNATURE_ALG } } }
+  });
+
+  const ensRecords = {
+    'cl.receipt.signer': signer,
+    'cl.sig.kid': kid,
+    'cl.sig.pub': ensPubValue,
+    'cl.sig.canonical': runtimeCore.CANONICAL_METHOD
+  };
+
+  const result = await verifyReceipt(receipt, { ens: { textResolver: async (_name, key) => ensRecords[key] || null } });
+  assert.equal(result.status, 'VERIFIED');
+});
+
+test('tampered runtime-produced receipt invalidates', async () => {
+  const sample = await loadJson(samplePath);
+  const tampered = structuredClone(sample);
+  tampered.output.summary = 'runtime receipt tampered';
+  const result = await verifyReceipt(tampered, { ens: fixtureEns });
+  assert.equal(result.status, 'INVALID');
+});
+
+test('missing metadata.proof rejects', async () => {
+  const sample = await loadJson(samplePath);
+  const missingProof = structuredClone(sample);
+  delete missingProof.metadata.proof;
+  const result = await verifyReceipt(missingProof, { ens: fixtureEns });
+  assert.equal(result.status, 'INVALID');
+});
+
+test('wrong canonicalization rejects', async () => {
+  const sample = await loadJson(samplePath);
+  const wrongCanonical = structuredClone(sample);
+  wrongCanonical.metadata.proof.canonicalization = 'json.unsorted_keys.v1';
+  const result = await verifyReceipt(wrongCanonical, { ens: fixtureEns });
   assert.equal(result.status, 'INVALID');
 });
