@@ -114,3 +114,18 @@ Regenerate with:
 ```bash
 npm run build:clas-schemas
 ```
+
+
+## Local End-to-End Proof Flow
+
+Run a local runtime signing endpoint and verify the returned canonical receipt through VerifyAgent:
+
+```bash
+npm run e2e:runtime
+```
+
+Expected output:
+- `STEP 1 SIGNED`
+- `STEP 2 VERIFIED`
+- `STEP 3 TAMPERED INVALID`
+
