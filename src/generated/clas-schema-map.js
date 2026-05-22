@@ -64,7 +64,10 @@ export const clasSchemaMap = {
               "properties": {
                 "canonicalization": {
                   "type": "string",
-                  "minLength": 1
+                  "enum": [
+                    "json.sorted_keys.v1",
+                    "erc8211.merkle.v1"
+                  ]
                 },
                 "hash": {
                   "type": "object",
@@ -84,28 +87,76 @@ export const clasSchemaMap = {
                   "additionalProperties": false
                 },
                 "signature": {
-                  "type": "object",
-                  "required": [
-                    "alg",
-                    "value",
-                    "kid"
-                  ],
-                  "properties": {
-                    "alg": {
-                      "const": "Ed25519"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "alg",
+                        "value",
+                        "kid"
+                      ],
+                      "properties": {
+                        "alg": {
+                          "const": "Ed25519"
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "kid": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
                     },
-                    "value": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "kid": {
-                      "type": "string",
-                      "minLength": 1
+                    {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "alg",
+                          "value",
+                          "kid",
+                          "role"
+                        ],
+                        "properties": {
+                          "alg": {
+                            "const": "Ed25519"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "kid": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "solver",
+                              "relayer",
+                              "agent",
+                              "runtime",
+                              "verifier"
+                            ]
+                          }
+                        },
+                        "additionalProperties": false
+                      }
                     }
-                  },
-                  "additionalProperties": false
+                  ]
                 }
               },
+              "additionalProperties": true
+            },
+            "trace": {
+              "$id": "https://schemas.commandlayer.local/clas/trust-verification/_shared/trace.schema.json",
+              "type": "object",
+              "properties": {},
               "additionalProperties": true
             }
           },
@@ -189,7 +240,10 @@ export const clasSchemaMap = {
               "properties": {
                 "canonicalization": {
                   "type": "string",
-                  "minLength": 1
+                  "enum": [
+                    "json.sorted_keys.v1",
+                    "erc8211.merkle.v1"
+                  ]
                 },
                 "hash": {
                   "type": "object",
@@ -209,28 +263,76 @@ export const clasSchemaMap = {
                   "additionalProperties": false
                 },
                 "signature": {
-                  "type": "object",
-                  "required": [
-                    "alg",
-                    "value",
-                    "kid"
-                  ],
-                  "properties": {
-                    "alg": {
-                      "const": "Ed25519"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "alg",
+                        "value",
+                        "kid"
+                      ],
+                      "properties": {
+                        "alg": {
+                          "const": "Ed25519"
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "kid": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
                     },
-                    "value": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "kid": {
-                      "type": "string",
-                      "minLength": 1
+                    {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "alg",
+                          "value",
+                          "kid",
+                          "role"
+                        ],
+                        "properties": {
+                          "alg": {
+                            "const": "Ed25519"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "kid": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "solver",
+                              "relayer",
+                              "agent",
+                              "runtime",
+                              "verifier"
+                            ]
+                          }
+                        },
+                        "additionalProperties": false
+                      }
                     }
-                  },
-                  "additionalProperties": false
+                  ]
                 }
               },
+              "additionalProperties": true
+            },
+            "trace": {
+              "$id": "https://schemas.commandlayer.local/clas/trust-verification/_shared/trace.schema.json",
+              "type": "object",
+              "properties": {},
               "additionalProperties": true
             }
           },
@@ -314,7 +416,10 @@ export const clasSchemaMap = {
               "properties": {
                 "canonicalization": {
                   "type": "string",
-                  "minLength": 1
+                  "enum": [
+                    "json.sorted_keys.v1",
+                    "erc8211.merkle.v1"
+                  ]
                 },
                 "hash": {
                   "type": "object",
@@ -334,28 +439,76 @@ export const clasSchemaMap = {
                   "additionalProperties": false
                 },
                 "signature": {
-                  "type": "object",
-                  "required": [
-                    "alg",
-                    "value",
-                    "kid"
-                  ],
-                  "properties": {
-                    "alg": {
-                      "const": "Ed25519"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "alg",
+                        "value",
+                        "kid"
+                      ],
+                      "properties": {
+                        "alg": {
+                          "const": "Ed25519"
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "kid": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
                     },
-                    "value": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "kid": {
-                      "type": "string",
-                      "minLength": 1
+                    {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "alg",
+                          "value",
+                          "kid",
+                          "role"
+                        ],
+                        "properties": {
+                          "alg": {
+                            "const": "Ed25519"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "kid": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "solver",
+                              "relayer",
+                              "agent",
+                              "runtime",
+                              "verifier"
+                            ]
+                          }
+                        },
+                        "additionalProperties": false
+                      }
                     }
-                  },
-                  "additionalProperties": false
+                  ]
                 }
               },
+              "additionalProperties": true
+            },
+            "trace": {
+              "$id": "https://schemas.commandlayer.local/clas/trust-verification/_shared/trace.schema.json",
+              "type": "object",
+              "properties": {},
               "additionalProperties": true
             }
           },
@@ -439,7 +592,10 @@ export const clasSchemaMap = {
               "properties": {
                 "canonicalization": {
                   "type": "string",
-                  "minLength": 1
+                  "enum": [
+                    "json.sorted_keys.v1",
+                    "erc8211.merkle.v1"
+                  ]
                 },
                 "hash": {
                   "type": "object",
@@ -459,28 +615,76 @@ export const clasSchemaMap = {
                   "additionalProperties": false
                 },
                 "signature": {
-                  "type": "object",
-                  "required": [
-                    "alg",
-                    "value",
-                    "kid"
-                  ],
-                  "properties": {
-                    "alg": {
-                      "const": "Ed25519"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "alg",
+                        "value",
+                        "kid"
+                      ],
+                      "properties": {
+                        "alg": {
+                          "const": "Ed25519"
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "kid": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
                     },
-                    "value": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "kid": {
-                      "type": "string",
-                      "minLength": 1
+                    {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "alg",
+                          "value",
+                          "kid",
+                          "role"
+                        ],
+                        "properties": {
+                          "alg": {
+                            "const": "Ed25519"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "kid": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "solver",
+                              "relayer",
+                              "agent",
+                              "runtime",
+                              "verifier"
+                            ]
+                          }
+                        },
+                        "additionalProperties": false
+                      }
                     }
-                  },
-                  "additionalProperties": false
+                  ]
                 }
               },
+              "additionalProperties": true
+            },
+            "trace": {
+              "$id": "https://schemas.commandlayer.local/clas/trust-verification/_shared/trace.schema.json",
+              "type": "object",
+              "properties": {},
               "additionalProperties": true
             }
           },
@@ -564,7 +768,10 @@ export const clasSchemaMap = {
               "properties": {
                 "canonicalization": {
                   "type": "string",
-                  "minLength": 1
+                  "enum": [
+                    "json.sorted_keys.v1",
+                    "erc8211.merkle.v1"
+                  ]
                 },
                 "hash": {
                   "type": "object",
@@ -584,28 +791,76 @@ export const clasSchemaMap = {
                   "additionalProperties": false
                 },
                 "signature": {
-                  "type": "object",
-                  "required": [
-                    "alg",
-                    "value",
-                    "kid"
-                  ],
-                  "properties": {
-                    "alg": {
-                      "const": "Ed25519"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "alg",
+                        "value",
+                        "kid"
+                      ],
+                      "properties": {
+                        "alg": {
+                          "const": "Ed25519"
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "kid": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
                     },
-                    "value": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "kid": {
-                      "type": "string",
-                      "minLength": 1
+                    {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "alg",
+                          "value",
+                          "kid",
+                          "role"
+                        ],
+                        "properties": {
+                          "alg": {
+                            "const": "Ed25519"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "kid": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "solver",
+                              "relayer",
+                              "agent",
+                              "runtime",
+                              "verifier"
+                            ]
+                          }
+                        },
+                        "additionalProperties": false
+                      }
                     }
-                  },
-                  "additionalProperties": false
+                  ]
                 }
               },
+              "additionalProperties": true
+            },
+            "trace": {
+              "$id": "https://schemas.commandlayer.local/clas/trust-verification/_shared/trace.schema.json",
+              "type": "object",
+              "properties": {},
               "additionalProperties": true
             }
           },
@@ -689,7 +944,10 @@ export const clasSchemaMap = {
               "properties": {
                 "canonicalization": {
                   "type": "string",
-                  "minLength": 1
+                  "enum": [
+                    "json.sorted_keys.v1",
+                    "erc8211.merkle.v1"
+                  ]
                 },
                 "hash": {
                   "type": "object",
@@ -709,28 +967,76 @@ export const clasSchemaMap = {
                   "additionalProperties": false
                 },
                 "signature": {
-                  "type": "object",
-                  "required": [
-                    "alg",
-                    "value",
-                    "kid"
-                  ],
-                  "properties": {
-                    "alg": {
-                      "const": "Ed25519"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "alg",
+                        "value",
+                        "kid"
+                      ],
+                      "properties": {
+                        "alg": {
+                          "const": "Ed25519"
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "kid": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
                     },
-                    "value": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "kid": {
-                      "type": "string",
-                      "minLength": 1
+                    {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "alg",
+                          "value",
+                          "kid",
+                          "role"
+                        ],
+                        "properties": {
+                          "alg": {
+                            "const": "Ed25519"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "kid": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "solver",
+                              "relayer",
+                              "agent",
+                              "runtime",
+                              "verifier"
+                            ]
+                          }
+                        },
+                        "additionalProperties": false
+                      }
                     }
-                  },
-                  "additionalProperties": false
+                  ]
                 }
               },
+              "additionalProperties": true
+            },
+            "trace": {
+              "$id": "https://schemas.commandlayer.local/clas/trust-verification/_shared/trace.schema.json",
+              "type": "object",
+              "properties": {},
               "additionalProperties": true
             }
           },
@@ -814,7 +1120,10 @@ export const clasSchemaMap = {
               "properties": {
                 "canonicalization": {
                   "type": "string",
-                  "minLength": 1
+                  "enum": [
+                    "json.sorted_keys.v1",
+                    "erc8211.merkle.v1"
+                  ]
                 },
                 "hash": {
                   "type": "object",
@@ -834,28 +1143,76 @@ export const clasSchemaMap = {
                   "additionalProperties": false
                 },
                 "signature": {
-                  "type": "object",
-                  "required": [
-                    "alg",
-                    "value",
-                    "kid"
-                  ],
-                  "properties": {
-                    "alg": {
-                      "const": "Ed25519"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "alg",
+                        "value",
+                        "kid"
+                      ],
+                      "properties": {
+                        "alg": {
+                          "const": "Ed25519"
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "kid": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
                     },
-                    "value": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "kid": {
-                      "type": "string",
-                      "minLength": 1
+                    {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "alg",
+                          "value",
+                          "kid",
+                          "role"
+                        ],
+                        "properties": {
+                          "alg": {
+                            "const": "Ed25519"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "kid": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "solver",
+                              "relayer",
+                              "agent",
+                              "runtime",
+                              "verifier"
+                            ]
+                          }
+                        },
+                        "additionalProperties": false
+                      }
                     }
-                  },
-                  "additionalProperties": false
+                  ]
                 }
               },
+              "additionalProperties": true
+            },
+            "trace": {
+              "$id": "https://schemas.commandlayer.local/clas/trust-verification/_shared/trace.schema.json",
+              "type": "object",
+              "properties": {},
               "additionalProperties": true
             }
           },
@@ -939,7 +1296,10 @@ export const clasSchemaMap = {
               "properties": {
                 "canonicalization": {
                   "type": "string",
-                  "minLength": 1
+                  "enum": [
+                    "json.sorted_keys.v1",
+                    "erc8211.merkle.v1"
+                  ]
                 },
                 "hash": {
                   "type": "object",
@@ -959,28 +1319,76 @@ export const clasSchemaMap = {
                   "additionalProperties": false
                 },
                 "signature": {
-                  "type": "object",
-                  "required": [
-                    "alg",
-                    "value",
-                    "kid"
-                  ],
-                  "properties": {
-                    "alg": {
-                      "const": "Ed25519"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "alg",
+                        "value",
+                        "kid"
+                      ],
+                      "properties": {
+                        "alg": {
+                          "const": "Ed25519"
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "kid": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
                     },
-                    "value": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "kid": {
-                      "type": "string",
-                      "minLength": 1
+                    {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "alg",
+                          "value",
+                          "kid",
+                          "role"
+                        ],
+                        "properties": {
+                          "alg": {
+                            "const": "Ed25519"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "kid": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "solver",
+                              "relayer",
+                              "agent",
+                              "runtime",
+                              "verifier"
+                            ]
+                          }
+                        },
+                        "additionalProperties": false
+                      }
                     }
-                  },
-                  "additionalProperties": false
+                  ]
                 }
               },
+              "additionalProperties": true
+            },
+            "trace": {
+              "$id": "https://schemas.commandlayer.local/clas/trust-verification/_shared/trace.schema.json",
+              "type": "object",
+              "properties": {},
               "additionalProperties": true
             }
           },
@@ -1064,7 +1472,10 @@ export const clasSchemaMap = {
               "properties": {
                 "canonicalization": {
                   "type": "string",
-                  "minLength": 1
+                  "enum": [
+                    "json.sorted_keys.v1",
+                    "erc8211.merkle.v1"
+                  ]
                 },
                 "hash": {
                   "type": "object",
@@ -1084,28 +1495,76 @@ export const clasSchemaMap = {
                   "additionalProperties": false
                 },
                 "signature": {
-                  "type": "object",
-                  "required": [
-                    "alg",
-                    "value",
-                    "kid"
-                  ],
-                  "properties": {
-                    "alg": {
-                      "const": "Ed25519"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "alg",
+                        "value",
+                        "kid"
+                      ],
+                      "properties": {
+                        "alg": {
+                          "const": "Ed25519"
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "kid": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
                     },
-                    "value": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "kid": {
-                      "type": "string",
-                      "minLength": 1
+                    {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "alg",
+                          "value",
+                          "kid",
+                          "role"
+                        ],
+                        "properties": {
+                          "alg": {
+                            "const": "Ed25519"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "kid": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "solver",
+                              "relayer",
+                              "agent",
+                              "runtime",
+                              "verifier"
+                            ]
+                          }
+                        },
+                        "additionalProperties": false
+                      }
                     }
-                  },
-                  "additionalProperties": false
+                  ]
                 }
               },
+              "additionalProperties": true
+            },
+            "trace": {
+              "$id": "https://schemas.commandlayer.local/clas/trust-verification/_shared/trace.schema.json",
+              "type": "object",
+              "properties": {},
               "additionalProperties": true
             }
           },
@@ -1189,7 +1648,10 @@ export const clasSchemaMap = {
               "properties": {
                 "canonicalization": {
                   "type": "string",
-                  "minLength": 1
+                  "enum": [
+                    "json.sorted_keys.v1",
+                    "erc8211.merkle.v1"
+                  ]
                 },
                 "hash": {
                   "type": "object",
@@ -1209,28 +1671,76 @@ export const clasSchemaMap = {
                   "additionalProperties": false
                 },
                 "signature": {
-                  "type": "object",
-                  "required": [
-                    "alg",
-                    "value",
-                    "kid"
-                  ],
-                  "properties": {
-                    "alg": {
-                      "const": "Ed25519"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "alg",
+                        "value",
+                        "kid"
+                      ],
+                      "properties": {
+                        "alg": {
+                          "const": "Ed25519"
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "kid": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
                     },
-                    "value": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "kid": {
-                      "type": "string",
-                      "minLength": 1
+                    {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "alg",
+                          "value",
+                          "kid",
+                          "role"
+                        ],
+                        "properties": {
+                          "alg": {
+                            "const": "Ed25519"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "kid": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "solver",
+                              "relayer",
+                              "agent",
+                              "runtime",
+                              "verifier"
+                            ]
+                          }
+                        },
+                        "additionalProperties": false
+                      }
                     }
-                  },
-                  "additionalProperties": false
+                  ]
                 }
               },
+              "additionalProperties": true
+            },
+            "trace": {
+              "$id": "https://schemas.commandlayer.local/clas/trust-verification/_shared/trace.schema.json",
+              "type": "object",
+              "properties": {},
               "additionalProperties": true
             }
           },

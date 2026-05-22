@@ -5,6 +5,7 @@ import { computeReceiptHash, verifyReceipt } from '../src/verify.js';
 import { toBase64 } from '../src/crypto.js';
 import { createSignedReceipt } from '../examples/wrapped-agent-demo/demo-agent.js';
 import * as runtimeCore from '@commandlayer/runtime-core';
+import { validateClasTrustV1Shape, validateLegacyReceiptShape } from '../src/schema.js';
 
 const samplePath = new URL('../examples/sample-receipt.json', import.meta.url);
 const tamperedPath = new URL('../examples/tampered-receipt.json', import.meta.url);
@@ -300,4 +301,83 @@ test('wrong canonicalization rejects', async () => {
   wrongCanonical.metadata.proof.canonicalization = 'json.unsorted_keys.v1';
   const result = await verifyReceipt(wrongCanonical, { ens: fixtureEns });
   assert.equal(result.status, 'INVALID');
+});
+
+
+test('legacy single-signature shape remains valid', async () => {
+  const sample = await loadJson(samplePath);
+  assert.equal(validateLegacyReceiptShape(sample), true);
+});
+
+test('metadata.trace is accepted', async () => {
+  const sample = await loadJson(samplePath);
+  const withTrace = toClasV1(sample, {
+    verb: 'verify',
+    signature: { alg: 'Ed25519', kid: 'x', sig: 'y' },
+    metadata: {
+      ...sample.metadata,
+      family: 'clas_trust_verification',
+      version: 'v1',
+      trace: { span_id: 'abc123', nested: { ok: true } },
+      proof: { ...sample.metadata?.proof, trust_verb: 'verify' }
+    }
+  });
+  assert.equal(validateClasTrustV1Shape(withTrace), true);
+});
+
+test('multi-signature proof shape validates', async () => {
+  const sample = await loadJson(samplePath);
+  const multiSig = toClasV1(sample, {
+    verb: 'verify',
+    signature: { alg: 'Ed25519', kid: 'x', sig: 'y' },
+    metadata: {
+      ...sample.metadata,
+      family: 'clas_trust_verification',
+      version: 'v1',
+      proof: {
+        ...sample.metadata?.proof,
+        trust_verb: 'verify',
+        canonicalization: 'erc8211.merkle.v1',
+        signature: [{ alg: 'Ed25519', value: 'abc', kid: 'kid1', role: 'runtime' }]
+      }
+    }
+  });
+  assert.equal(validateClasTrustV1Shape(multiSig), true);
+});
+
+test('malformed multi-signature proof shape fails cleanly', async () => {
+  const sample = await loadJson(samplePath);
+  const badMultiSig = toClasV1(sample, {
+    verb: 'verify',
+    signature: { alg: 'Ed25519', kid: 'x', sig: 'y' },
+    metadata: {
+      ...sample.metadata,
+      family: 'clas_trust_verification',
+      version: 'v1',
+      proof: {
+        ...sample.metadata?.proof,
+        trust_verb: 'verify',
+        signature: [{ alg: 'Ed25519', value: 'abc', kid: 'kid1' }]
+      }
+    }
+  });
+
+  assert.equal(validateLegacyReceiptShape(badMultiSig), false);
+  assert.equal(validateClasTrustV1Shape(badMultiSig), false);
+});
+
+test('unknown metadata fields remain accepted', async () => {
+  const sample = await loadJson(samplePath);
+  const withUnknownMetadata = toClasV1(sample, {
+    verb: 'verify',
+    signature: { alg: 'Ed25519', kid: 'x', sig: 'y' },
+    metadata: {
+      ...sample.metadata,
+      family: 'clas_trust_verification',
+      version: 'v1',
+      foo_unknown: 'bar',
+      proof: { ...sample.metadata?.proof, trust_verb: 'verify' }
+    }
+  });
+  assert.equal(validateClasTrustV1Shape(withUnknownMetadata), true);
 });
