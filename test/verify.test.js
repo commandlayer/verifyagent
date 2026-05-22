@@ -325,7 +325,7 @@ test('metadata.trace is accepted', async () => {
   assert.equal(validateClasTrustV1Shape(withTrace), true);
 });
 
-test('multi-signature proof shape validates', async () => {
+test('multi-signature proof shape with erc8211.composable.v1 validates', async () => {
   const sample = await loadJson(samplePath);
   const multiSig = toClasV1(sample, {
     verb: 'verify',
@@ -337,7 +337,7 @@ test('multi-signature proof shape validates', async () => {
       proof: {
         ...sample.metadata?.proof,
         trust_verb: 'verify',
-        canonicalization: 'erc8211.merkle.v1',
+        canonicalization: 'erc8211.composable.v1',
         signature: [{ alg: 'Ed25519', value: 'abc', kid: 'kid1', role: 'runtime' }]
       }
     }
