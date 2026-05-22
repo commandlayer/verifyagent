@@ -27,12 +27,14 @@ function bundleRefs(schema, currentDir, cache) {
 
 async function main() {
   const proofPath = path.join(schemaRoot, '_shared/proof.schema.json');
+  const tracePath = path.join(schemaRoot, '_shared/trace.schema.json');
   const basePath = path.join(schemaRoot, 'verbs/receipt.base.schema.json');
 
   const proof = await readJson(proofPath);
+  const trace = await readJson(tracePath);
   const base = await readJson(basePath);
 
-  const cache = new Map([[proofPath, proof], [basePath, base]]);
+  const cache = new Map([[proofPath, proof], [tracePath, trace], [basePath, base]]);
   const bundledBase = bundleRefs(base, path.dirname(basePath), cache);
 
   const schemaMap = Object.fromEntries(TRUST_VERBS.map((verb) => [verb, {

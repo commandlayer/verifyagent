@@ -1,0 +1,6 @@
+{
+  "$id": "https://schemas.commandlayer.local/clas/trust-verification/_shared/trace.schema.json",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": true
+}

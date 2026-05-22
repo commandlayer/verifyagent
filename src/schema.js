@@ -18,6 +18,27 @@ function hasString(v) {
   return typeof v === 'string' && v.trim().length > 0;
 }
 
+function isValidLegacySignature(signature) {
+  return isObject(signature)
+    && signature.alg === 'Ed25519'
+    && hasString(signature.kid)
+    && hasString(signature.value);
+}
+
+function isValidMultiSignature(signatures) {
+  if (!Array.isArray(signatures) || signatures.length === 0) return false;
+  const roles = new Set(['user', 'solver', 'relayer', 'agent', 'runtime', 'verifier']);
+  return signatures.every((signature) => isObject(signature)
+    && signature.alg === 'Ed25519'
+    && hasString(signature.kid)
+    && hasString(signature.value)
+    && roles.has(signature.role));
+}
+
+function isValidProofSignature(signature) {
+  return isValidLegacySignature(signature) || isValidMultiSignature(signature);
+}
+
 export function detectReceiptMode(receipt) {
   if (!isObject(receipt)) return 'legacy';
   const proof = receipt.metadata?.proof;
@@ -52,10 +73,7 @@ export function validateLegacyReceiptShape(receipt) {
     && isObject(proof.hash)
     && proof.hash.alg === 'SHA-256'
     && hasString(proof.hash.value)
-    && isObject(proof.signature)
-    && proof.signature.alg === 'Ed25519'
-    && hasString(proof.signature.kid)
-    && hasString(proof.signature.value);
+    && isValidProofSignature(proof.signature);
 }
 
 export function validateClasTrustV1Shape(receipt) {
