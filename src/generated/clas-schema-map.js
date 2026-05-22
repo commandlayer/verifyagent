@@ -66,7 +66,7 @@ export const clasSchemaMap = {
                   "type": "string",
                   "enum": [
                     "json.sorted_keys.v1",
-                    "erc8211.merkle.v1"
+                    "erc8211.composable.v1"
                   ]
                 },
                 "hash": {
@@ -242,7 +242,7 @@ export const clasSchemaMap = {
                   "type": "string",
                   "enum": [
                     "json.sorted_keys.v1",
-                    "erc8211.merkle.v1"
+                    "erc8211.composable.v1"
                   ]
                 },
                 "hash": {
@@ -418,7 +418,7 @@ export const clasSchemaMap = {
                   "type": "string",
                   "enum": [
                     "json.sorted_keys.v1",
-                    "erc8211.merkle.v1"
+                    "erc8211.composable.v1"
                   ]
                 },
                 "hash": {
@@ -594,7 +594,7 @@ export const clasSchemaMap = {
                   "type": "string",
                   "enum": [
                     "json.sorted_keys.v1",
-                    "erc8211.merkle.v1"
+                    "erc8211.composable.v1"
                   ]
                 },
                 "hash": {
@@ -770,7 +770,7 @@ export const clasSchemaMap = {
                   "type": "string",
                   "enum": [
                     "json.sorted_keys.v1",
-                    "erc8211.merkle.v1"
+                    "erc8211.composable.v1"
                   ]
                 },
                 "hash": {
@@ -946,7 +946,7 @@ export const clasSchemaMap = {
                   "type": "string",
                   "enum": [
                     "json.sorted_keys.v1",
-                    "erc8211.merkle.v1"
+                    "erc8211.composable.v1"
                   ]
                 },
                 "hash": {
@@ -1122,7 +1122,7 @@ export const clasSchemaMap = {
                   "type": "string",
                   "enum": [
                     "json.sorted_keys.v1",
-                    "erc8211.merkle.v1"
+                    "erc8211.composable.v1"
                   ]
                 },
                 "hash": {
@@ -1298,7 +1298,7 @@ export const clasSchemaMap = {
                   "type": "string",
                   "enum": [
                     "json.sorted_keys.v1",
-                    "erc8211.merkle.v1"
+                    "erc8211.composable.v1"
                   ]
                 },
                 "hash": {
@@ -1474,7 +1474,7 @@ export const clasSchemaMap = {
                   "type": "string",
                   "enum": [
                     "json.sorted_keys.v1",
-                    "erc8211.merkle.v1"
+                    "erc8211.composable.v1"
                   ]
                 },
                 "hash": {
@@ -1650,7 +1650,7 @@ export const clasSchemaMap = {
                   "type": "string",
                   "enum": [
                     "json.sorted_keys.v1",
-                    "erc8211.merkle.v1"
+                    "erc8211.composable.v1"
                   ]
                 },
                 "hash": {
