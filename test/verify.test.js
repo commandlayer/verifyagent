@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { computeReceiptHash, verifyReceipt } from '../src/verify.js';
 import { toBase64 } from '../src/crypto.js';
 import { createSignedReceipt } from '../examples/wrapped-agent-demo/demo-agent.js';
@@ -380,4 +381,113 @@ test('unknown metadata fields remain accepted', async () => {
     }
   });
   assert.equal(validateClasTrustV1Shape(withUnknownMetadata), true);
+});
+
+async function scopedFixture({ settlement = false, executionFields = ['receipt_id', 'verb', 'agent', 'action'], includeSettlementProof = true } = {}) {
+  const agentKeys = await runtimeCore.generateEd25519KeyPair();
+  const railKeys = await runtimeCore.generateEd25519KeyPair();
+  const receipt = {
+    schema: 'clas.execution.receipt.v1',
+    receipt_id: 'rcpt_scoped_123',
+    verb: 'execute',
+    agent: 'agent.commandlayer.eth',
+    action: { tool: 'summarize', input_hash: 'sha256:abc' },
+    proofs: []
+  };
+  if (settlement) {
+    receipt.settlement = {
+      privacy: 'stealth_address',
+      payment_ref: 'pay_opaque_123',
+      payee_commitment: 'commitment_abc',
+      viewer_required: true,
+      amount: '10.00',
+      asset: 'USDC'
+    };
+  }
+  const signProof = (type, signer, kid, privateKeyPem, covered_fields) => {
+    const payload = Object.fromEntries(covered_fields.map((field) => [field, receipt[field]]));
+    const canonical = runtimeCore.canonicalize(payload);
+    return {
+      type,
+      signer,
+      covered_fields,
+      canonicalization: runtimeCore.CANONICAL_METHOD,
+      hash: { alg: 'SHA-256', value: createHash('sha256').update(canonical, 'utf8').digest('hex') },
+      signature: { alg: runtimeCore.SIGNATURE_ALG, kid, value: runtimeCore.signCanonical(canonical, privateKeyPem) }
+    };
+  };
+  receipt.proofs.push(signProof('execution', receipt.agent, 'agent-kid', agentKeys.privateKeyPem, executionFields));
+  if (settlement && includeSettlementProof) receipt.proofs.push(signProof('settlement', 'rail.commandlayer.eth', 'rail-kid', railKeys.privateKeyPem, ['receipt_id', 'settlement']));
+  const recordsByName = {
+    [receipt.agent]: { 'cl.receipt.signer': receipt.agent, 'cl.sig.kid': 'agent-kid', 'cl.sig.pub': agentKeys.ensPubValue, 'cl.sig.canonical': runtimeCore.CANONICAL_METHOD },
+    'rail.commandlayer.eth': { 'cl.receipt.signer': 'rail.commandlayer.eth', 'cl.sig.kid': 'rail-kid', 'cl.sig.pub': railKeys.ensPubValue, 'cl.sig.canonical': runtimeCore.CANONICAL_METHOD }
+  };
+  return { receipt, ens: { textResolver: async (name, key) => recordsByName[name]?.[key] || null } };
+}
+
+test('valid execution-only scoped receipt displays execution proof valid', async () => {
+  const { receipt, ens } = await scopedFixture();
+  const result = await verifyReceipt(receipt, { ens });
+  assert.equal(result.status, 'VERIFIED');
+  assert.equal(result.proofCards.execution.status, 'valid');
+  assert.equal(result.proofCards.settlement.status, 'missing');
+});
+
+test('valid execution and settlement scoped receipt displays both proof cards valid', async () => {
+  const { receipt, ens } = await scopedFixture({ settlement: true });
+  const result = await verifyReceipt(receipt, { ens });
+  assert.equal(result.status, 'VERIFIED');
+  assert.equal(result.proofCards.execution.status, 'valid');
+  assert.equal(result.proofCards.settlement.status, 'valid');
+  assert.equal(result.settlementPrivacy.display.message, 'Private settlement committed');
+  assert.equal(result.settlementPrivacy.display.verification_mode, 'selective disclosure');
+});
+
+test('settlement present without settlement proof is invalid/missing', async () => {
+  const { receipt, ens } = await scopedFixture({ settlement: true, includeSettlementProof: false });
+  const result = await verifyReceipt(receipt, { ens });
+  assert.equal(result.status, 'INVALID');
+  assert.equal(result.proofCards.settlement.status, 'missing');
+});
+
+test('action tamper invalidates execution proof', async () => {
+  const { receipt, ens } = await scopedFixture({ settlement: true });
+  receipt.action.tool = 'tampered';
+  const result = await verifyReceipt(receipt, { ens });
+  assert.equal(result.proofCards.execution.status, 'invalid');
+  assert.equal(result.proofCards.settlement.status, 'valid');
+  assert.equal(result.status, 'INVALID');
+});
+
+test('settlement tamper invalidates settlement proof only', async () => {
+  const { receipt, ens } = await scopedFixture({ settlement: true });
+  receipt.settlement.amount = '99.00';
+  const result = await verifyReceipt(receipt, { ens });
+  assert.equal(result.proofCards.execution.status, 'valid');
+  assert.equal(result.proofCards.settlement.status, 'invalid');
+  assert.equal(result.status, 'INVALID');
+});
+
+test('execution proof covering settlement is invalid', async () => {
+  const { receipt, ens } = await scopedFixture({ executionFields: ['receipt_id', 'verb', 'agent', 'action', 'settlement'] });
+  const result = await verifyReceipt(receipt, { ens });
+  assert.equal(result.proofCards.execution.status, 'invalid');
+  assert.match(result.proofCards.execution.errors.join(','), /ERR_UNEXPECTED_COVERED_FIELDS/);
+});
+
+test('settlement.stealth_address is unsafe/invalid', async () => {
+  const { receipt, ens } = await scopedFixture({ settlement: true });
+  receipt.settlement.stealth_address = 'st:secret';
+  const result = await verifyReceipt(receipt, { ens });
+  assert.equal(result.settlementPrivacy.status, 'invalid');
+  assert.match(result.errors.join(','), /ERR_STEALTH_ADDRESS_DISCLOSED/);
+});
+
+test('raw 0x payment_ref is unsafe/invalid', async () => {
+  const { receipt, ens } = await scopedFixture({ settlement: true });
+  receipt.settlement.payment_ref = `0x${'a'.repeat(64)}`;
+  const result = await verifyReceipt(receipt, { ens });
+  assert.equal(result.settlementPrivacy.status, 'invalid');
+  assert.equal(result.settlementPrivacy.display.payment_ref, undefined);
+  assert.match(result.errors.join(','), /ERR_RAW_PAYMENT_REF_DISCLOSED/);
 });

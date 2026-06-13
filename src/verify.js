@@ -5,6 +5,119 @@ import * as runtimeCore from '@commandlayer/runtime-core';
 
 const ED25519_SPKI_PREFIX_HEX = '302a300506032b6570032100';
 
+const EXECUTION_FIELDS = ['receipt_id', 'verb', 'agent', 'action'];
+const SETTLEMENT_FIELDS = ['receipt_id', 'settlement'];
+const RAW_TX_HASH_RE = /^0x[a-fA-F0-9]{64}$/;
+
+function fieldsEqual(actual, expected) {
+  return Array.isArray(actual) && actual.length === expected.length && actual.every((field, index) => field === expected[index]);
+}
+
+function scopedPayload(receipt, fields) {
+  return Object.fromEntries(fields.map((field) => [field, receipt?.[field]]));
+}
+
+function findScopedProof(receipt, type) {
+  return Array.isArray(receipt?.proofs) ? receipt.proofs.find((proof) => proof?.type === type) : null;
+}
+
+function proofResult(type, proof, expectedFields) {
+  return {
+    type,
+    signer: proof?.signer || 'unknown',
+    covered_fields: Array.isArray(proof?.covered_fields) ? proof.covered_fields : [],
+    hash_match: false,
+    signature_valid: false,
+    status: proof ? 'invalid' : 'missing',
+    errors: proof ? [] : ['ERR_MISSING_PROOF'],
+    expected_fields: expectedFields
+  };
+}
+
+async function verifyScopedProof(receipt, proof, expectedFields, options = {}) {
+  const result = proofResult(proof?.type || 'unknown', proof, expectedFields);
+  if (!proof) return result;
+
+  if (!fieldsEqual(proof.covered_fields, expectedFields)) result.errors.push('ERR_UNEXPECTED_COVERED_FIELDS');
+  if (proof.hash?.alg !== 'SHA-256') result.errors.push('ERR_UNSUPPORTED_HASH_ALG');
+  const signatureAlg = proof.signature?.alg === 'ed25519' ? runtimeCore.SIGNATURE_ALG : proof.signature?.alg;
+  if (signatureAlg !== runtimeCore.SIGNATURE_ALG) result.errors.push('ERR_UNSUPPORTED_SIGNATURE_ALG');
+
+  const ens = await resolveSignerFromEns(proof.signer, options.ens || {});
+  result.signer = ens.records?.['cl.receipt.signer'] || proof.signer || 'unknown';
+  if (!ens.ensResolved) result.errors.push('ERR_ENS_RESOLUTION_FAILED');
+  if (ens.ensResolved && proof.signature?.kid !== ens.records['cl.sig.kid']) result.errors.push('ERR_ENS_KID_MISMATCH');
+  if (ens.ensResolved && proof.canonicalization !== (ens.records['cl.sig.canonical'] || runtimeCore.CANONICAL_METHOD)) result.errors.push('ERR_ENS_CANONICAL_MISMATCH');
+  if (ens.ensResolved && proof.signer !== ens.records['cl.receipt.signer']) result.errors.push('ERR_ENS_SIGNER_MISMATCH');
+
+  let canonical = '';
+  try {
+    canonical = runtimeCore.canonicalize(scopedPayload(receipt, expectedFields));
+    const hash = createHash('sha256').update(canonical, 'utf8').digest('hex');
+    result.hash_match = proof.hash?.value === hash;
+    if (!result.hash_match) result.errors.push('ERR_HASH_MISMATCH');
+    if (ens.ensResolved) {
+      const publicKeyPem = ensurePemFromEnsPub(ens.records['cl.sig.pub']);
+      result.signature_valid = runtimeCore.verifyCanonical(canonical, proof.signature?.value || '', publicKeyPem);
+      if (!result.signature_valid) result.errors.push('ERR_SIGNATURE_INVALID');
+    }
+  } catch (error) {
+    result.errors.push(mapRuntimeCoreError(error));
+  }
+
+  result.status = result.errors.length === 0 && result.hash_match && result.signature_valid ? 'valid' : 'invalid';
+  return result;
+}
+
+function evaluateSettlementPrivacy(receipt) {
+  const settlement = receipt?.settlement;
+  if (!settlement) return { present: false, status: 'missing', display: null, errors: [] };
+  const errors = [];
+  const display = { verification_mode: null, viewer_required: Boolean(settlement.viewer_required) };
+  if (settlement.privacy === 'stealth_address') {
+    display.message = 'Private settlement committed';
+    display.payee_commitment = settlement.payee_commitment || null;
+    display.verification_mode = 'selective disclosure';
+    if (typeof settlement.stealth_address === 'string' && settlement.stealth_address.length > 0) errors.push('ERR_STEALTH_ADDRESS_DISCLOSED');
+    if (typeof settlement.payment_ref === 'string') {
+      if (RAW_TX_HASH_RE.test(settlement.payment_ref)) errors.push('ERR_RAW_PAYMENT_REF_DISCLOSED');
+      else display.payment_ref = settlement.payment_ref;
+    }
+  }
+  return { present: true, status: errors.length === 0 ? 'valid' : 'invalid', display, errors };
+}
+
+async function verifyScopedExecutionReceipt(receipt, options = {}) {
+  const executionProof = await verifyScopedProof(receipt, findScopedProof(receipt, 'execution'), EXECUTION_FIELDS, options);
+  const settlementPresent = Boolean(receipt?.settlement);
+  const settlementProof = settlementPresent
+    ? await verifyScopedProof(receipt, findScopedProof(receipt, 'settlement'), SETTLEMENT_FIELDS, options)
+    : proofResult('settlement', null, SETTLEMENT_FIELDS);
+  const privacy = evaluateSettlementPrivacy(receipt);
+  const valid = executionProof.status === 'valid' && (!settlementPresent || (settlementProof.status === 'valid' && privacy.status === 'valid'));
+  return {
+    valid,
+    ok: valid,
+    status: valid ? 'VERIFIED' : 'INVALID',
+    signerEns: executionProof.signer,
+    keyId: findScopedProof(receipt, 'execution')?.signature?.kid || null,
+    publicKeySource: 'scoped proof ENS text record',
+    canonicalization: findScopedProof(receipt, 'execution')?.canonicalization || null,
+    checks: {
+      schema: receipt?.schema === 'clas.execution.receipt.v1',
+      canonical_hash: executionProof.hash_match,
+      signature: executionProof.signature_valid,
+      signer: executionProof.status !== 'missing',
+      scoped_execution_receipt: true
+    },
+    proofCards: { execution: executionProof, settlement: settlementProof },
+    settlementPrivacy: privacy,
+    copy: ['Private settlement, public accountability.', 'Execution and settlement are independently attested.'],
+    errors: [...executionProof.errors, ...(settlementPresent ? settlementProof.errors : []), ...privacy.errors]
+  };
+}
+
+
 function extractProofFields(receipt) {
   const proof = receipt?.metadata?.proof || {};
   return {
@@ -42,6 +155,8 @@ function ensurePemFromEnsPub(ensPubValue) {
 export async function verifyReceipt(receiptInput, options = {}) {
   let receipt;
   try { receipt = typeof receiptInput === 'string' ? JSON.parse(receiptInput) : receiptInput; } catch { return invalidResult(); }
+
+  if (receipt?.schema === 'clas.execution.receipt.v1') return verifyScopedExecutionReceipt(receipt, options);
 
   const mode = detectReceiptMode(receipt);
   const schemaValid = mode === 'clas_v1' ? validateClasTrustV1Shape(receipt) : validateLegacyReceiptShape(receipt);
