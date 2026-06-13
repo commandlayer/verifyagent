@@ -17,6 +17,9 @@
       .verified { color: #0a7d2e; }
       .invalid { color: #b10e0e; }
       .error-msg { color: #b10e0e; font-size: 0.9rem; margin-top: 0.5rem; }
+      .proof-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 1rem; }
+      .proof-card h3 { margin-top: 0; }
+      .privacy-note { margin-top: 1rem; }
       ul { margin-top: 0.4rem; }
       a { color: #0a58ca; }
     </style>
@@ -24,6 +27,7 @@
   <body>
     <h1>VerifyAgent</h1>
     <p class="tagline">Agent &rarr; Receipt &rarr; VerifyAgent &rarr; Proof.</p>
+    <p class="tagline"><strong>Private settlement, public accountability.</strong> Execution and settlement are independently attested.</p>
 
     <textarea id="receiptInput" placeholder="Paste receipt JSON here..."></textarea>
 
@@ -48,6 +52,9 @@
       </ul>
     </div>
 
+    <div id="proofCards" class="proof-grid" aria-live="polite"></div>
+    <div id="privacyCard" class="card privacy-note" hidden></div>
+
     <div class="card" style="margin-top: 1rem;">
       <h3 style="margin-top: 0;">Wrap Your Agent</h3>
       <p>Run the local wrapped-agent demo, emit a signed receipt, then verify it here.</p>
@@ -69,8 +76,11 @@
       const hashMatchedEl = document.getElementById('hashMatched');
       const signatureValidEl = document.getElementById('signatureValid');
       const errorMsgEl = document.getElementById('errorMsg');
+      const proofCardsEl = document.getElementById('proofCards');
+      const privacyCardEl = document.getElementById('privacyCard');
 
       const yn = (v) => (v ? 'YES' : 'NO');
+      const escapeHtml = (v) => String(v ?? '—').replace(/[&<>'"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
 
       function clearError() {
         errorMsgEl.textContent = '';
@@ -78,6 +88,47 @@
 
       function showError(msg) {
         errorMsgEl.textContent = msg;
+      }
+
+
+      function renderProofCards(cards) {
+        proofCardsEl.innerHTML = '';
+        if (!cards) return;
+        for (const [label, card] of Object.entries(cards)) {
+          const el = document.createElement('section');
+          el.className = 'card proof-card';
+          el.innerHTML = `
+            <h3>${label === 'execution' ? 'Execution proof' : 'Settlement proof'}</h3>
+            <ul>
+              <li>Proof type: <strong></strong></li>
+              <li>Signer: <strong></strong></li>
+              <li>Covered fields: <strong></strong></li>
+              <li>Hash match: <strong></strong></li>
+              <li>Signature valid: <strong></strong></li>
+              <li>Final status: <strong class="status"></strong></li>
+            </ul>`;
+          const values = [card.type, card.signer, (card.covered_fields || []).join(', ') || '—', yn(card.hash_match), yn(card.signature_valid), card.status];
+          el.querySelectorAll('strong').forEach((strong, index) => { strong.textContent = values[index] || '—'; });
+          proofCardsEl.appendChild(el);
+        }
+      }
+
+      function renderPrivacy(privacy) {
+        privacyCardEl.hidden = true;
+        privacyCardEl.textContent = '';
+        if (!privacy?.present) return;
+        const display = privacy.display || {};
+        privacyCardEl.hidden = false;
+        privacyCardEl.innerHTML = `
+          <h3 style="margin-top: 0;">Settlement privacy</h3>
+          <ul>
+            <li>Status: <strong>${escapeHtml(privacy.status)}</strong></li>
+            <li>${escapeHtml(display.message || 'Settlement committed')}</li>
+            <li>Payment ref: <strong>${escapeHtml(display.payment_ref || '—')}</strong></li>
+            <li>Payee commitment: <strong>${escapeHtml(display.payee_commitment || '—')}</strong></li>
+            <li>Verification mode: <strong>${escapeHtml(display.verification_mode || '—')}</strong></li>
+            <li>Viewer required: <strong>${yn(display.viewer_required)}</strong></li>
+          </ul>`;
       }
 
       function render(result) {
@@ -88,8 +139,10 @@
         keyIdEl.textContent = result.keyId || '—';
         publicKeySourceEl.textContent = result.publicKeySource || '—';
         canonicalizationEl.textContent = result.canonicalization || '—';
-        hashMatchedEl.textContent = yn(result.checks?.hash_matched);
-        signatureValidEl.textContent = yn(result.checks?.signature_valid);
+        hashMatchedEl.textContent = yn(result.checks?.canonical_hash);
+        signatureValidEl.textContent = yn(result.checks?.signature);
+        renderProofCards(result.proofCards);
+        renderPrivacy(result.settlementPrivacy);
       }
 
       async function loadJson(filePath) {
@@ -128,6 +181,9 @@
         canonicalizationEl.textContent = '—';
         hashMatchedEl.textContent = '—';
         signatureValidEl.textContent = '—';
+        proofCardsEl.innerHTML = '';
+        privacyCardEl.hidden = true;
+        privacyCardEl.textContent = '';
       });
       document.getElementById('verifyBtn').addEventListener('click', async () => {
         clearError();
