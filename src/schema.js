@@ -1,14 +1,21 @@
 import Ajv from 'ajv';
-import { clasSchemaMap, TRUST_VERBS } from './generated/clas-schema-map.js';
+import Ajv2020 from 'ajv/dist/2020.js';
+import addFormats from 'ajv-formats';
+import { clasSchemaMap, TRUST_VERBS, CLAS_EXECUTION_RECEIPT_SCHEMA } from './generated/clas-schema-map.js';
 
 const TRUST_VERB_SET = new Set(TRUST_VERBS);
 
 const clasValidators = Object.fromEntries(
   Object.entries(clasSchemaMap).map(([verb, entry]) => {
     const ajv = new Ajv({ allErrors: true, strict: false });
+    addFormats(ajv);
     return [verb, ajv.compile(entry.receipt)];
   })
 );
+
+const executionAjv = new Ajv2020({ allErrors: true, strict: false });
+addFormats(executionAjv);
+const executionReceiptValidator = executionAjv.compile(CLAS_EXECUTION_RECEIPT_SCHEMA);
 
 function isObject(v) {
   return v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -41,6 +48,8 @@ function isValidProofSignature(signature) {
 
 export function detectReceiptMode(receipt) {
   if (!isObject(receipt)) return 'legacy';
+  if (receipt?.schema === 'clas.execution.receipt.v1') return 'clas_execution_v1';
+
   const proof = receipt.metadata?.proof;
   const metadata = receipt.metadata;
 
@@ -90,6 +99,14 @@ export function validateClasTrustV1Shape(receipt) {
   const validator = clasValidators[verb];
   if (!validator) return false;
   return validator(receipt) === true;
+}
+
+export function validateClasExecutionReceiptShape(receipt) {
+  return executionReceiptValidator(receipt) === true;
+}
+
+export function getClasExecutionReceiptSchemaErrors() {
+  return executionReceiptValidator.errors ? structuredClone(executionReceiptValidator.errors) : [];
 }
 
 export function normalizeTrustVerb(verb) {
