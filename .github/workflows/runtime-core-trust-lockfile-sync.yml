@@ -1,0 +1,37 @@
+name: runtime-core-trust-lockfile-sync
+
+on:
+  push:
+    branches:
+      - trust/factory-execution-evidence
+
+permissions:
+  contents: write
+
+jobs:
+  lockfile:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: trust/factory-execution-evidence
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Regenerate lockfile without lifecycle scripts
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Commit lockfile only if changed
+        shell: bash
+        run: |
+          if git diff --quiet -- package-lock.json; then
+            echo "package-lock.json already synchronized"
+            exit 0
+          fi
+          git config user.name "commandlayer-ci"
+          git config user.email "ci@commandlayer.org"
+          git add package-lock.json
+          git commit -m "Lock released runtime-core trust commit"
+          git push origin HEAD:trust/factory-execution-evidence
