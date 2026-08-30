@@ -1,9 +1,14 @@
 {
   "name": "verifyagent",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "private": true,
-  "description": "VerifyAgent.eth is the public verifier for receipts produced by ENS-named agents.",
+  "description": "VerifyAgent.eth is the public verifier for CommandLayer execution receipts.",
   "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./factory-execution-evidence": "./src/factory-execution-evidence.js",
+    "./factory-key-document": "./src/factory-key-document.js"
+  },
   "scripts": {
     "dev": "python3 -m http.server 4173",
     "test": "node --test",
@@ -11,7 +16,6 @@
     "pretest": "npm run build:clas-schemas",
     "e2e:runtime": "node scripts/runtime-e2e-verify.mjs"
   },
-  "type": "module",
   "dependencies": {
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
