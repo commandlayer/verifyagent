@@ -1,5 +1,6 @@
 import * as installedRuntimeCore from '@commandlayer/runtime-core';
 import { resolveSignerFromEns } from './ens.js';
+import { resolveFactoryKeyFromDocument } from './factory-key-document.js';
 
 export const FACTORY_EXECUTION_RECEIPT_PROFILE = 'commandlayer.execution-evidence.v1';
 
@@ -54,15 +55,34 @@ export async function verifyFactoryExecutionEvidenceReceipt(receipt, options = {
   }
 
   const signerId = receipt.proof.signer_id;
-  const ens = await resolveSignerFromEns(signerId, options.ens || {});
-  const resolveKey = async ({ kid, signerId: requestedSigner }) => {
-    if (!ens.ensResolved) return null;
-    if (requestedSigner !== signerId) return null;
+  const kid = receipt.proof.kid;
+  const keyDocument = await resolveFactoryKeyFromDocument(
+    { kid, signerId },
+    options.keyDocument || {},
+  );
+
+  let resolvedKey = keyDocument.state === 'resolved' ? keyDocument.key : null;
+  let publicKeySource = keyDocument.state === 'resolved' ? keyDocument.source : 'not resolved';
+  let ens = null;
+
+  // A configured HTTPS trust root is authoritative when it responds with a
+  // document-level/key-level failure. Do not bypass a key conflict by silently
+  // switching identity systems. ENS is only an availability fallback when the
+  // HTTPS trust root is disabled or genuinely unavailable.
+  if (!resolvedKey && (keyDocument.state === 'disabled' || keyDocument.state === 'unavailable')) {
+    ens = await resolveSignerFromEns(signerId, options.ens || {});
+    if (ens.ensResolved) publicKeySource = ens.keySource || 'ENS text record';
+  }
+
+  const resolveKey = async ({ kid: requestedKid, signerId: requestedSigner }) => {
+    if (requestedSigner !== signerId || requestedKid !== kid) return null;
+    if (resolvedKey) return resolvedKey;
+    if (!ens?.ensResolved) return null;
     const pub = ens.records?.['cl.sig.pub'];
     if (!pub || typeof runtimeCore.parsePublicKey !== 'function') return null;
     return {
       rawPublicKey: runtimeCore.parsePublicKey(pub),
-      kid: ens.records?.['cl.sig.kid'] || kid,
+      kid: ens.records?.['cl.sig.kid'] || requestedKid,
       signerId: ens.records?.['cl.receipt.signer'] || requestedSigner,
     };
   };
@@ -71,7 +91,7 @@ export async function verifyFactoryExecutionEvidenceReceipt(receipt, options = {
   try {
     verified = await runtimeCore.verifyFactoryExecutionReceipt(receipt, {
       expectedSigner: signerId,
-      expectedKid: receipt.proof.kid,
+      expectedKid: kid,
       resolveKey,
     });
   } catch (error) {
@@ -79,13 +99,20 @@ export async function verifyFactoryExecutionEvidenceReceipt(receipt, options = {
   }
 
   const valid = verified?.valid === true;
+  const verificationKeyResolved = Boolean(resolvedKey || ens?.ensResolved);
+  const resolutionError = keyDocument.state === 'authoritative_failure'
+    ? keyDocument.reason
+    : (!verificationKeyResolved && keyDocument.state === 'unavailable'
+      ? keyDocument.reason
+      : null);
+
   return {
     valid,
     ok: valid,
-    status: valid ? 'VERIFIED' : (ens.ensResolved ? 'INVALID' : 'INDETERMINATE'),
-    signerEns: ens.records?.['cl.receipt.signer'] || signerId || 'unknown',
-    keyId: receipt.proof.kid || null,
-    publicKeySource: ens.ensResolved ? (ens.keySource || 'ENS text record') : 'not resolved',
+    status: valid ? 'VERIFIED' : (verificationKeyResolved ? 'INVALID' : 'INDETERMINATE'),
+    signerEns: ens?.records?.['cl.receipt.signer'] || signerId || 'unknown',
+    keyId: kid || null,
+    publicKeySource,
     canonicalization: receipt.proof.canonical || null,
     truth_certified: false,
     proof_scope: 'execution_integrity_and_provenance',
@@ -98,6 +125,10 @@ export async function verifyFactoryExecutionEvidenceReceipt(receipt, options = {
       payment_separated: verified?.checks?.paymentFieldsAbsent === true,
     },
     runtime_checks: verified?.checks || null,
-    errors: valid ? [] : [verified?.reason || (ens.ensResolved ? 'ERR_FACTORY_EXECUTION_RECEIPT_INVALID' : 'ERR_ENS_RESOLUTION_FAILED')],
+    errors: valid ? [] : [
+      resolutionError
+      || verified?.reason
+      || (verificationKeyResolved ? 'ERR_FACTORY_EXECUTION_RECEIPT_INVALID' : 'ERR_FACTORY_KEY_RESOLUTION_FAILED'),
+    ],
   };
 }
