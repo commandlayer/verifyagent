@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 - 2026-08-30
+- Added independent verification for `commandlayer.execution-evidence.v1` Machine-Service Factory receipts.
+- Added HTTPS factory trust-root resolution with exact `kid` + `signer_id` matching and fail-closed authoritative failures.
+- Added execution-integrity/provenance result mapping with `truth_certified: false`.
+- Added explicit `INDETERMINATE` behavior when the runtime-core factory surface or signer key is unavailable.
+- Pinned the cutover build to the exact released runtime-core merge commit `9a87bb7b945080e5e0882368a2f80fed66944d7d` until the npm package receives its one-time registry bootstrap.
+- Exported `./factory-execution-evidence` and `./factory-key-document` so the public CommandLayer deployment can consume the actual VerifyAgent verifier implementation.
+
 ## 0.2.1 - 2026-04-28
 - Added deterministic real Ed25519 verification fixtures for tests (`test/fixtures/real-signed-receipt.json`) and updated tests to validate real signature behavior (including explicit rejection of `DEMO_SIGNATURE_VALID_FOR_HASH`).
 - Replaced example receipts with real signed receipt-format data and tampered counterpart that fails hash matching.
