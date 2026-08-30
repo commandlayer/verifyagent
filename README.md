@@ -36,6 +36,30 @@ npm install @commandlayer/agent-sdk
 5. VerifyAgent canonicalizes + hashes payload, then verifies Ed25519 signature.
 6. Result is **VERIFIED** or **INVALID** with explicit checks.
 
+## Machine-Service Factory execution evidence
+
+VerifyAgent also recognizes `commandlayer.execution-evidence.v1` receipts produced by the Machine-Service Factory. For this profile, verification is explicitly limited to execution integrity and provenance; a valid receipt does **not** certify the factual truth of model output or source claims.
+
+Factory verification delegates canonicalization and signature verification to `@commandlayer/runtime-core` and returns `VERIFIED`, `INVALID`, or `INDETERMINATE` with `truth_certified: false`.
+
+### Factory verification-key resolution
+
+Factory receipts do not choose their own verification-key URL.
+
+When `COMMANDLAYER_RECEIPT_KEY_URL` is configured, VerifyAgent first resolves the exact active `kid + signer_id + Ed25519` key from that configured HTTPS trust-root document. The launch target is:
+
+`https://api.commandlayer.org/.well-known/commandlayer-receipt-keys`
+
+Resolution is fail-closed:
+
+- a matching active key from the configured HTTPS trust root is used;
+- a reachable trust root with a missing, conflicting, ambiguous, malformed, or private-key-bearing entry is authoritative and is **not** bypassed through ENS;
+- ENS may be used only as an availability fallback when the HTTPS trust root is disabled or genuinely unavailable;
+- the receipt itself cannot supply or redirect the trust-root URL;
+- no hardcoded verification key is accepted as a factory-production fallback.
+
+The expected trust-root document schema is `commandlayer.receipt-verification-keys.v1` and the receipt profile remains `commandlayer.execution-evidence.v1`.
+
 ## Scope
 
 VerifyAgent is a verification surface and reference verifier implementation.
@@ -77,6 +101,8 @@ VerifyAgent resolves signer keys from ENS TXT records.
 Fallback is a local demo fallback for runtime.commandlayer.eth only, mirroring the ENS record structure.
 The verification flow is designed to operate against live ENS records.
 
+For Machine-Service Factory receipts, the configured HTTPS trust root described above takes priority. ENS is an availability fallback only when that trust root is disabled or unavailable.
+
 VerifyAgent is designed to be discoverable as a verifier across agent ecosystems, with ENS supporting signer discovery and identity resolution.
 
 ## Validation semantics
@@ -102,7 +128,6 @@ Full `checks` object:
 
 The response also includes a `debug` object with `recomputed_hash_sha256`, `expected_hash_sha256`, and `key_id_matched` for diagnostic use.
 
-
 ## CLAS schema bundling
 
 VerifyAgent validates CLAS Trust Verification receipts with JSON Schema using a generated bundle (`src/generated/clas-schema-map.js`).
@@ -114,7 +139,6 @@ Regenerate with:
 ```bash
 npm run build:clas-schemas
 ```
-
 
 ## Local End-to-End Proof Flow
 
@@ -128,4 +152,3 @@ Expected output:
 - `STEP 1 SIGNED`
 - `STEP 2 VERIFIED`
 - `STEP 3 TAMPERED INVALID`
-
